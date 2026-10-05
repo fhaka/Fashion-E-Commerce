@@ -64,7 +64,7 @@ function InventoryInner() {
     { key: 'adjust', header: 'On hand', cell: (r) => <StockEditor row={r} onSaved={(u) => setData((rows) => rows?.map((x) => (x.variantId === r.variantId ? { ...x, ...u } : x)) ?? rows)} /> },
     {
       key: 'history',
-      header: '',
+      header: <span className="sr-only">History</span>,
       cell: (r) => (
         <button type="button" onClick={() => setHistory(r)} className="flex items-center gap-1 text-xs text-stone-500 hover:text-ink" aria-label={`Stock history for ${r.sku}`}>
           <History className="h-3.5 w-3.5" /> History
@@ -169,7 +169,7 @@ function HistoryDrawer({ row, onClose }: { row: Row | null; onClose: () => void 
             <span>
               <span className="block">{REASON[m.reason] ?? m.reason}</span>
               {m.note && <span className="block text-xs text-stone-500">{m.note}</span>}
-              <span className="text-xs text-stone-400">{formatDate(m.createdAt, true)}</span>
+              <span className="text-xs text-stone-500">{formatDate(m.createdAt, true)}</span>
             </span>
             <span className={cn('font-medium tabular-nums', m.delta > 0 ? 'text-success' : 'text-sale')}>
               {m.delta > 0 ? '+' : ''}

@@ -19,7 +19,7 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
           Return home
         </ButtonLink>
       </div>
-      {error.digest && <p className="mt-8 text-xs text-stone-400">Reference: {error.digest}</p>}
+      {error.digest && <p className="mt-8 text-xs text-stone-500">Reference: {error.digest}</p>}
     </section>
   );
 }

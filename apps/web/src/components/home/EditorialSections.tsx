@@ -60,7 +60,7 @@ export function ShopByCategory({ categories }: { categories: CategoryNode[] }) {
               <Link href={`/category/${c.slug}`} className="group block">
                 <div className="relative aspect-[3/4] overflow-hidden bg-stone-200">
                   {c.image && (
-                    <Img src={c.image} alt={c.name} fill sizes="(min-width: 768px) 33vw, 100vw" className="object-cover transition-transform duration-[1.8s] ease-luxe group-hover:scale-[1.06]" />
+                    <Img src={c.image} alt="" fill sizes="(min-width: 768px) 33vw, 100vw" className="object-cover transition-transform duration-[1.8s] ease-luxe group-hover:scale-[1.06]" />
                   )}
                   <div className="absolute inset-0 bg-ink/30 transition-colors duration-700 group-hover:bg-ink/45" />
                   <div className="absolute inset-0 flex items-center justify-center">

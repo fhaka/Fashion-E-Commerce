@@ -8,6 +8,7 @@ import { getPaymentProvider } from '../providers/payment';
 import { sendEmail } from '../providers/email';
 import { ApiError } from '../utils/ApiError';
 import { addMinutes } from '../utils/helpers';
+import { revalidateStorefront } from '../utils/revalidate';
 import type { CartOwner } from './cart.service';
 import { computeTotals, describeCoupon, priceLines, validateCoupon, type PricedLine } from './pricing.service';
 import { toOrderDetail } from './account.service';
@@ -240,6 +241,8 @@ export async function markOrderPaid(orderId: string, providerRef?: string) {
   });
 
   if (result) {
+    // Stock changed: refresh those product pages.
+    revalidateStorefront(result.items.map((i) => i.productSlug).filter((x): x is string => !!x).map((slug) => `product:${slug}`));
     void sendEmail({
       to: result.email,
       subject: `Order confirmed — ${result.orderNumber}`,
@@ -354,6 +357,7 @@ export async function refundOrder(orderId: string, opts: { restock: boolean; act
     });
   });
 
+  if (opts.restock) revalidateStorefront(order.items.map((i) => i.productSlug).filter((x): x is string => !!x).map((slug) => `product:${slug}`));
   void sendEmail({
     to: order.email,
     subject: `Your refund for ${order.orderNumber}`,

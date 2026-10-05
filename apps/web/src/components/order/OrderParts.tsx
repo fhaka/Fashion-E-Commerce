@@ -71,13 +71,13 @@ export function OrderTimeline({ order }: { order: OrderDetail }) {
                   transition={{ delay: 0.15 + i * 0.12, duration: 0.5, ease: EASE }}
                   className={cn(
                     'relative z-10 flex h-10 w-10 items-center justify-center rounded-full border transition-colors',
-                    done ? 'border-ink bg-ink text-bone' : 'border-stone-300 bg-paper text-stone-400',
+                    done ? 'border-ink bg-ink text-bone' : 'border-stone-300 bg-paper text-stone-500',
                     current && 'ring-4 ring-ink/10',
                   )}
                 >
                   <Icon className="h-4 w-4" strokeWidth={1.5} />
                 </motion.span>
-                <span className={cn('mt-3 text-[0.65rem] tracking-[0.12em] uppercase', done ? 'text-ink' : 'text-stone-400')}>{s.label}</span>
+                <span className={cn('mt-3 text-[0.65rem] tracking-[0.12em] uppercase', done ? 'text-ink' : 'text-stone-500')}>{s.label}</span>
               </li>
             );
           })}

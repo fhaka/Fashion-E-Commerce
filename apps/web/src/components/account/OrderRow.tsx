@@ -26,7 +26,7 @@ export function OrderRow({ order }: { order: OrderSummary }) {
         </div>
         <StatusBadge status={order.status} />
         <p className="w-24 text-right text-sm tabular-nums">{formatMoney(order.total)}</p>
-        <ArrowRight className="h-4 w-4 text-stone-400 transition-transform group-hover:translate-x-1 group-hover:text-ink" />
+        <ArrowRight className="h-4 w-4 text-stone-500 transition-transform group-hover:translate-x-1 group-hover:text-ink" />
       </Link>
     </li>
   );

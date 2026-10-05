@@ -439,7 +439,7 @@ function ImagesPanel({ images, setImages, colors, error }: { images: ImageDraft[
       title={`Images (${images.length})`}
       actions={
         <span className="flex gap-2">
-          <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp,image/avif" multiple className="sr-only" onChange={(e) => upload(e.target.files)} id="image-upload" />
+          <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp,image/avif" multiple className="sr-only" onChange={(e) => upload(e.target.files)} id="image-upload" aria-label="Upload product images" tabIndex={-1} />
           <Button size="sm" variant="outline" loading={uploading} onClick={() => fileRef.current?.click()}>
             <ImagePlus className="h-3.5 w-3.5" /> Upload
           </Button>
@@ -476,7 +476,7 @@ function ImagesPanel({ images, setImages, colors, error }: { images: ImageDraft[
               }}
               className={cn('flex items-center gap-3 border border-stone-200 p-2', dragKey === img.key && 'opacity-50')}
             >
-              <GripVertical className="h-4 w-4 shrink-0 cursor-grab text-stone-400" aria-hidden />
+              <GripVertical className="h-4 w-4 shrink-0 cursor-grab text-stone-500" aria-hidden />
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={img.url.includes('images.unsplash.com') ? img.url.replace(/w=\d+/, 'w=160') : img.url} alt="" className="h-16 w-12 shrink-0 bg-stone-100 object-cover" />
               <div className="grid min-w-0 flex-1 gap-2 sm:grid-cols-[1fr_10rem]">
@@ -532,7 +532,7 @@ function ImagesPanel({ images, setImages, colors, error }: { images: ImageDraft[
         }}
       >
         <label className="flex h-9 flex-1 items-center gap-2 border border-stone-300 px-2 text-sm focus-within:border-ink">
-          <Link2 className="h-4 w-4 text-stone-400" />
+          <Link2 className="h-4 w-4 text-stone-500" />
           <span className="sr-only">Image URL</span>
           <input value={urlInput} onChange={(e) => setUrlInput(e.target.value)} placeholder="…or add an image by URL (https://)" className="w-full bg-transparent outline-none" />
         </label>
@@ -715,7 +715,7 @@ function VariantsPanel({
                     <td className="py-2">
                       <button
                         type="button"
-                        className="p-1 text-stone-400 hover:text-sale"
+                        className="p-1 text-stone-500 hover:text-sale"
                         onClick={() => setVariants((list) => list.filter((x) => x.key !== v.key))}
                         aria-label="Remove variant"
                         title={v.hasOrders ? 'Has order history — it will be retired, not deleted' : 'Remove'}

@@ -101,7 +101,7 @@ export function SearchOverlay() {
                   onChange={(e) => setQ(e.target.value)}
                   placeholder="Search for coats, cashmere, tailoring…"
                   aria-label="Search products"
-                  className="w-full bg-transparent font-display text-2xl outline-none placeholder:text-stone-400 sm:text-4xl"
+                  className="w-full bg-transparent font-display text-2xl outline-none placeholder:text-stone-500 sm:text-4xl"
                   maxLength={100}
                 />
                 {loading && <span className="h-4 w-4 shrink-0 animate-spin rounded-full border-[1.5px] border-ink border-t-transparent" aria-label="Loading" />}

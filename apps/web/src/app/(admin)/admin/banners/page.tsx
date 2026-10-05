@@ -120,7 +120,7 @@ export default function BannersPage() {
         <ul className="space-y-3">
           {data.map((b, i) => (
             <li key={b.id} className={cn('flex items-stretch gap-4 border border-stone-200 bg-paper', !live(b) && 'opacity-60')}>
-              <button type="button" onClick={() => open(b)} className="relative w-48 shrink-0 overflow-hidden bg-stone-100 sm:w-64">
+              <button type="button" onClick={() => open(b)} tabIndex={-1} aria-label={`Edit ${b.title}`} className="relative w-48 shrink-0 overflow-hidden bg-stone-100 sm:w-64">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={b.image.replace(/w=\d+/, 'w=500')} alt="" className="absolute inset-0 h-full w-full object-cover" />
               </button>

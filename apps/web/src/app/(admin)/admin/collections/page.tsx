@@ -198,13 +198,13 @@ function CollectionEditor({ collection, onClose, onSaved }: { collection: Collec
                 <Thumb src={p.image} />
                 <span className="min-w-0 flex-1 truncate">{p.name}</span>
                 {p.status !== 'ACTIVE' && <Pill>{p.status.toLowerCase()}</Pill>}
-                <button type="button" onClick={() => move(i, -1)} disabled={i === 0} className="p-1 text-stone-400 hover:text-ink disabled:opacity-30" aria-label="Move up">
+                <button type="button" onClick={() => move(i, -1)} disabled={i === 0} className="p-1 text-stone-500 hover:text-ink disabled:opacity-30" aria-label="Move up">
                   <ArrowUp className="h-3.5 w-3.5" />
                 </button>
-                <button type="button" onClick={() => move(i, 1)} disabled={i === products.length - 1} className="p-1 text-stone-400 hover:text-ink disabled:opacity-30" aria-label="Move down">
+                <button type="button" onClick={() => move(i, 1)} disabled={i === products.length - 1} className="p-1 text-stone-500 hover:text-ink disabled:opacity-30" aria-label="Move down">
                   <ArrowDown className="h-3.5 w-3.5" />
                 </button>
-                <button type="button" onClick={() => setProducts((list) => list.filter((x) => x.id !== p.id))} className="p-1 text-stone-400 hover:text-sale" aria-label={`Remove ${p.name}`}>
+                <button type="button" onClick={() => setProducts((list) => list.filter((x) => x.id !== p.id))} className="p-1 text-stone-500 hover:text-sale" aria-label={`Remove ${p.name}`}>
                   <X className="h-3.5 w-3.5" />
                 </button>
               </li>

@@ -65,9 +65,12 @@ export function Footer({ categories }: { categories: CategoryNode[] }) {
           </nav>
         </div>
 
-        <p aria-hidden className="mt-24 font-display text-[22vw] leading-[0.8] tracking-[0.06em] text-bone/[0.06] uppercase select-none lg:text-[17rem]">
-          Maison
-        </p>
+        {/* Decorative watermark, drawn as SVG so it isn't treated as low-contrast body text. */}
+        <svg aria-hidden focusable="false" viewBox="0 0 870 190" className="mt-24 w-full select-none" preserveAspectRatio="xMinYMid meet">
+          <text x="0" y="160" className="fill-bone/[0.06] font-display" style={{ fontSize: 205, letterSpacing: '0.06em' }}>
+            MAISON
+          </text>
+        </svg>
 
         <div className="mt-8 flex flex-col gap-6 border-t border-bone/15 pt-8 text-xs text-bone/50 sm:flex-row sm:items-center sm:justify-between">
           <p>© {new Date().getFullYear()} Maison Atelier. All rights reserved.</p>

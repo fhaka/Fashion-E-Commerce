@@ -274,7 +274,7 @@ export function CheckoutView() {
   if (emptyBag && !pending) {
     return (
       <div className="container-site flex min-h-[60vh] flex-col items-center justify-center py-24 text-center">
-        <p className="font-display text-4xl font-light">Your bag is empty</p>
+        <h1 className="font-display text-4xl font-light">Your bag is empty</h1>
         <p className="mt-4 text-stone-500">Add a piece or two before checking out.</p>
         <ButtonLink href="/shop" className="mt-10">
           Continue shopping
@@ -288,6 +288,7 @@ export function CheckoutView() {
 
   return (
     <div className="container-site py-8 lg:py-14">
+      <h1 className="sr-only">Checkout</h1>
       {/* Mobile summary toggle */}
       <div className="mb-8 border-y border-stone-200 lg:hidden">
         <button type="button" className="flex w-full items-center justify-between py-4 text-sm" onClick={() => setSummaryOpen((o) => !o)} aria-expanded={summaryOpen}>

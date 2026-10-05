@@ -33,6 +33,9 @@ const schema = z.object({
   CLOUDINARY_API_SECRET: z.string().optional().transform((v) => v || undefined),
   CLOUDINARY_FOLDER: z.string().default('maison'),
 
+  /** Shared with the storefront so admin changes refresh cached pages instantly (optional). */
+  REVALIDATE_SECRET: z.string().optional().transform((v) => v || undefined),
+
   ORDER_RESERVATION_MINUTES: z.coerce.number().int().positive().default(30),
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']).default('info'),
 });

@@ -70,6 +70,7 @@ export function toProductCard(p: ProductCardRow) {
     colors: [...colors.values()],
     sizes: [...sizes.values()].sort((a, b) => a.sortOrder - b.sortOrder).map(({ label, inStock }) => ({ label, inStock })),
     inStock: p.variants.some((v) => available(v.inventory) > 0),
+    updatedAt: p.updatedAt,
   };
 }
 

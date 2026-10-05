@@ -22,9 +22,10 @@ import { authenticate, requireAdmin } from '../../middleware/auth';
 import { uploadLimiter } from '../../middleware/rateLimit';
 import { imageUpload } from '../../middleware/upload';
 import { validate } from '../../middleware/validate';
+import { revalidateOnWrite } from '../../utils/revalidate';
 
 export const adminRouter = Router();
-adminRouter.use(authenticate, requireAdmin);
+adminRouter.use(authenticate, requireAdmin, revalidateOnWrite);
 // Admin responses are user-specific and must never be cached.
 adminRouter.use((_req, res, next) => {
   res.set('Cache-Control', 'no-store');

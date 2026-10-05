@@ -79,7 +79,7 @@ export function FilterPanel({
           <div className="flex flex-wrap gap-2">
             {facets.genders.map((g) => (
               <Chip key={g.value} active={state.gender === g.value} onClick={() => update({ gender: state.gender === g.value ? undefined : (g.value as ListingState['gender']) })}>
-                {GENDER_LABELS[g.value] ?? g.value} <span className="text-stone-400">({g.count})</span>
+                {GENDER_LABELS[g.value] ?? g.value} <span className="text-stone-500">({g.count})</span>
               </Chip>
             ))}
           </div>
@@ -129,7 +129,7 @@ export function FilterPanel({
                       {on && <Check className={cn('h-3 w-3', isLight(c.hex) ? 'text-ink' : 'text-paper')} strokeWidth={2.5} />}
                     </span>
                     <span className={cn('truncate', on && 'font-medium')}>
-                      {c.name} <span className="text-stone-400">({c.count})</span>
+                      {c.name} <span className="text-stone-500">({c.count})</span>
                     </span>
                   </button>
                 </li>

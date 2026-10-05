@@ -66,7 +66,7 @@ export function NewsletterForm({ source = 'footer', tone = 'dark', className }: 
                 placeholder="Your email address"
                 aria-invalid={state === 'error'}
                 aria-describedby={state === 'error' ? `newsletter-${source}-error` : undefined}
-                className={cn('min-w-0 flex-1 bg-transparent py-3 text-sm outline-none', dark ? 'placeholder:text-bone/50' : 'placeholder:text-stone-400')}
+                className={cn('min-w-0 flex-1 bg-transparent py-3 text-sm outline-none', dark ? 'placeholder:text-bone/50' : 'placeholder:text-stone-500')}
               />
               <button type="submit" disabled={state === 'loading'} aria-label="Subscribe" className="flex items-center gap-2 py-3 pl-4 text-[0.7rem] tracking-[0.18em] uppercase">
                 {state === 'loading' ? (

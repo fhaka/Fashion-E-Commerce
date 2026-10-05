@@ -71,7 +71,7 @@ export default function ReviewsPage() {
             <li key={r.id} className="border border-stone-200 bg-paper p-5">
               <div className="flex flex-wrap items-start gap-4">
                 <Link href={`/admin/products/${r.product.id}`} className="flex items-center gap-3 text-sm hover:underline">
-                  <Thumb src={r.product.image} alt={r.product.name} />
+                  <Thumb src={r.product.image} />
                   <span className="max-w-[12rem] truncate">{r.product.name}</span>
                 </Link>
                 <div className="min-w-0 flex-1">
@@ -101,7 +101,7 @@ export default function ReviewsPage() {
                       Reject
                     </Button>
                   )}
-                  <button type="button" onClick={() => setDeleting(r)} className="p-2 text-stone-400 hover:text-sale" aria-label="Delete review">
+                  <button type="button" onClick={() => setDeleting(r)} className="p-2 text-stone-500 hover:text-sale" aria-label="Delete review">
                     <Trash2 className="h-4 w-4" />
                   </button>
                 </div>

@@ -23,6 +23,7 @@ export interface ProductCard {
   colors: { name: string; hex: string; slug: string; image: string | null; inStock: boolean }[];
   sizes: { label: string; inStock: boolean }[];
   inStock: boolean;
+  updatedAt: string;
 }
 
 export interface ProductVariant {

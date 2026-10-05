@@ -193,7 +193,7 @@ export function Marquee({ items, className }: { items: string[]; className?: str
     </div>
   );
   return (
-    <div className={cn('flex overflow-hidden', className)} aria-label={items.join(', ')}>
+    <div className={cn('flex overflow-hidden', className)} role="marquee" aria-label={items.join(', ')}>
       <div className="flex animate-marquee hover:[animation-play-state:paused]" aria-hidden>
         {row}
         {row}

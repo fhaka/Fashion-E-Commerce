@@ -107,7 +107,7 @@ export function ProductTable({ onOpen, featuredOnly = false }: { onOpen: (id: st
       cell: (p) => (
         <span>
           {formatMoney(p.basePrice)}
-          {p.compareAtPrice && <s className="ml-1.5 text-xs text-stone-400">{formatMoney(p.compareAtPrice)}</s>}
+          {p.compareAtPrice && <s className="ml-1.5 text-xs text-stone-500">{formatMoney(p.compareAtPrice)}</s>}
         </span>
       ),
     },

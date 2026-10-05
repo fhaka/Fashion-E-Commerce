@@ -5,7 +5,7 @@ import { forwardRef, useId, useState, type InputHTMLAttributes, type ReactNode, 
 import { cn } from '@/lib/utils';
 
 const control =
-  'peer h-12 w-full border bg-transparent px-4 text-sm outline-none transition-colors duration-300 placeholder:text-stone-400 focus:border-ink disabled:bg-stone-100 disabled:text-stone-500';
+  'peer h-12 w-full border bg-transparent px-4 text-sm outline-none transition-colors duration-300 placeholder:text-stone-500 focus:border-ink disabled:bg-stone-100 disabled:text-stone-500';
 
 interface FieldProps {
   label: string;
@@ -27,7 +27,7 @@ export const Input = forwardRef<HTMLInputElement, FieldProps & InputHTMLAttribut
     <div className={className}>
       <label htmlFor={inputId} className="mb-2 flex items-baseline justify-between text-[0.68rem] tracking-[0.14em] uppercase">
         <span>{label}</span>
-        {optional && <span className="tracking-normal text-stone-400 normal-case">Optional</span>}
+        {optional && <span className="tracking-normal text-stone-500 normal-case">Optional</span>}
       </label>
       <div className="relative">
         <input

@@ -20,7 +20,7 @@ export function Price({
       </span>
       {pct && (
         <>
-          <s className="text-stone-400">
+          <s className="text-stone-500">
             <span className="sr-only">Original price: </span>
             {formatMoney(compareAtPrice!)}
           </s>

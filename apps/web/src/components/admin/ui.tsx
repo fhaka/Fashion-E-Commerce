@@ -78,6 +78,7 @@ export function DataTable<T>({
   selectable,
   selected,
   onSelect,
+  label = 'Results',
 }: {
   columns: Column<T>[];
   rows: T[] | null;
@@ -88,6 +89,8 @@ export function DataTable<T>({
   selectable?: boolean;
   selected?: Set<string>;
   onSelect?: (ids: Set<string>) => void;
+  /** Accessible name for the scrollable table region. */
+  label?: string;
 }) {
   const all = rows ?? [];
   const allSelected = selectable && all.length > 0 && all.every((r) => selected?.has(rowKey(r)));
@@ -98,7 +101,8 @@ export function DataTable<T>({
     onSelect?.(next);
   };
   return (
-    <div className="overflow-x-auto border border-stone-200 bg-paper">
+    // Focusable so keyboard users can scroll the table horizontally on small screens.
+    <div className="overflow-x-auto border border-stone-200 bg-paper focus-visible:outline-1 focus-visible:outline-ink" tabIndex={0} role="region" aria-label={label}>
       <table className="w-full min-w-[40rem] text-left text-sm">
         <thead className="border-b border-stone-200 bg-stone-100/60">
           <tr>
@@ -193,7 +197,7 @@ export function SearchInput({ value, onChange, placeholder = 'Search…' }: { va
   }, [local]);
   return (
     <label className="flex h-10 min-w-56 flex-1 items-center gap-2 border border-stone-300 bg-paper px-3 focus-within:border-ink sm:max-w-xs">
-      <Search className="h-4 w-4 text-stone-400" />
+      <Search className="h-4 w-4 text-stone-500" />
       <span className="sr-only">Search</span>
       <input value={local} onChange={(e) => setLocal(e.target.value)} placeholder={placeholder} className="w-full bg-transparent text-sm outline-none" />
     </label>
@@ -228,7 +232,7 @@ export function Tabs<T extends string>({ value, onChange, tabs }: { value: T; on
           className={cn('-mb-px border-b-2 px-4 py-2.5 text-sm whitespace-nowrap transition-colors', value === t.value ? 'border-ink text-ink' : 'border-transparent text-stone-500 hover:text-ink')}
         >
           {t.label}
-          {t.count !== undefined && <span className="ml-1.5 text-xs text-stone-400">{t.count}</span>}
+          {t.count !== undefined && <span className="ml-1.5 text-xs text-stone-500">{t.count}</span>}
         </button>
       ))}
     </div>

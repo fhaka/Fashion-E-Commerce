@@ -84,5 +84,5 @@ All motion respects `prefers-reduced-motion`.
 5. ✅ Shop, product page, cart, wishlist
 6. ✅ Checkout, auth and account pages
 7. ✅ Admin dashboard
-8. SEO, performance and accessibility pass
+8. ✅ SEO, performance and accessibility pass
 9. Documentation and deployment guides

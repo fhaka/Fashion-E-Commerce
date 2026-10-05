@@ -288,21 +288,21 @@ export function ProductView({ product }: { product: ProductDetail }) {
             </ul>
 
             <div className="mt-2">
-              <AccordionItem title="Details" defaultOpen>
-                <ul className="list-disc space-y-1.5 pl-5 text-sm text-stone-600 marker:text-stone-400">
+              <AccordionItem level={2} title="Details" defaultOpen>
+                <ul className="list-disc space-y-1.5 pl-5 text-sm text-stone-600 marker:text-stone-500">
                   {product.details.map((d) => (
                     <li key={d}>{d}</li>
                   ))}
                 </ul>
-                {variant && <p className="mt-4 text-xs text-stone-400">Ref. {variant.sku}</p>}
+                {variant && <p className="mt-4 text-xs text-stone-500">Ref. {variant.sku}</p>}
               </AccordionItem>
               {(product.materials || product.care) && (
-                <AccordionItem title="Materials & care">
+                <AccordionItem level={2} title="Materials & care">
                   {product.materials && <p className="text-sm text-stone-600">{product.materials}</p>}
                   {product.care && <p className="mt-3 text-sm text-stone-600">{product.care}</p>}
                 </AccordionItem>
               )}
-              <AccordionItem title="Shipping & returns">
+              <AccordionItem level={2} title="Shipping & returns">
                 <div className="space-y-3 text-sm text-stone-600">
                   <p>Standard delivery (3–5 business days): {formatMoney(1200)}, complimentary on orders over {formatMoney(25000)}.</p>
                   <p>Express delivery (1–2 business days): {formatMoney(2500)}.</p>
@@ -315,7 +315,7 @@ export function ProductView({ product }: { product: ProductDetail }) {
                 </div>
               </AccordionItem>
               {product.collections.length > 0 && (
-                <AccordionItem title="Part of">
+                <AccordionItem level={2} title="Part of">
                   <ul className="flex flex-wrap gap-2">
                     {product.collections.map((c) => (
                       <li key={c.slug}>

@@ -114,7 +114,7 @@ export default function ReportsPage() {
         </div>
 
         {data && (
-          <div className="overflow-x-auto border border-stone-200 bg-paper">
+          <div className="overflow-x-auto border border-stone-200 bg-paper focus-visible:outline-1 focus-visible:outline-ink" tabIndex={0} role="region" aria-label="Report breakdown">
             <table className="w-full min-w-[44rem] text-sm">
               <thead className="border-b border-stone-200 bg-stone-100/60 text-left text-[0.66rem] tracking-[0.12em] text-stone-600 uppercase">
                 <tr>

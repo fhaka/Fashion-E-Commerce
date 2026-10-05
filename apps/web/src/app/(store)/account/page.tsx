@@ -25,20 +25,22 @@ export default function AccountOverviewPage() {
 
   return (
     <div className="space-y-12">
-      <dl className="grid grid-cols-3 border-y border-stone-200">
+      <ul className="grid grid-cols-3 border-y border-stone-200" aria-label="Account summary">
         {[
           { label: 'Orders', value: orders?.meta.total ?? '—', href: '/account/orders' },
           { label: 'Saved', value: wishCount, href: '/wishlist' },
           { label: 'Addresses', value: addresses?.length ?? '—', href: '/account/addresses' },
         ].map((s) => (
-          <Link key={s.label} href={s.href} className="group border-r border-stone-200 py-6 pr-4 last:border-r-0 sm:py-8 [&:not(:first-child)]:pl-4 sm:[&:not(:first-child)]:pl-8">
-            <dd className="font-display text-4xl font-light sm:text-5xl">{s.value}</dd>
-            <dt className="mt-1 flex items-center gap-2 text-xs text-stone-500 group-hover:text-ink">
-              {s.label} <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-1" />
-            </dt>
-          </Link>
+          <li key={s.label} className="border-r border-stone-200 last:border-r-0 [&:not(:first-child)]:pl-4 sm:[&:not(:first-child)]:pl-8">
+            <Link href={s.href} className="group block py-6 pr-4 sm:py-8">
+              <span className="block font-display text-4xl font-light sm:text-5xl">{s.value}</span>
+              <span className="mt-1 flex items-center gap-2 text-xs text-stone-500 group-hover:text-ink">
+                {s.label} <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-1" aria-hidden />
+              </span>
+            </Link>
+          </li>
         ))}
-      </dl>
+      </ul>
 
       <section aria-labelledby="recent-orders">
         <div className="mb-6 flex items-end justify-between">
