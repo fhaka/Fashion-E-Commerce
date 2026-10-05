@@ -1,0 +1,22 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: maison-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: maison
+      POSTGRES_PASSWORD: maison
+      POSTGRES_DB: maison
+    ports:
+      # Host port 5434 avoids clashing with a local PostgreSQL (5432) or other projects (5433)
+      - "5434:5432"
+    volumes:
+      - maison-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U maison -d maison"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  maison-pgdata:

@@ -1,0 +1,32 @@
+{
+  "name": "maison",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Maison — premium fashion e-commerce platform (Next.js + Express + PostgreSQL)",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "engines": {
+    "node": ">=20.11"
+  },
+  "scripts": {
+    "postinstall": "npm run build -w @maison/shared",
+    "db:up": "docker compose up -d postgres",
+    "db:down": "docker compose down",
+    "db:migrate": "npm run db:migrate -w @maison/api",
+    "db:deploy": "npm run db:deploy -w @maison/api",
+    "db:seed": "npm run db:seed -w @maison/api",
+    "db:reset": "npm run db:reset -w @maison/api",
+    "dev:api": "npm run dev -w @maison/api",
+    "dev:web": "npm run dev -w @maison/web",
+    "dev": "concurrently -n api,web -c magenta,cyan \"npm:dev:api\" \"npm:dev:web\"",
+    "build": "npm run build -w @maison/shared && npm run build -w @maison/api && npm run build -w @maison/web --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}
