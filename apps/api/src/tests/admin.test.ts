@@ -164,6 +164,29 @@ describe('product management', () => {
     expect(adj.actorId).toBe(adminId);
   });
 
+  it('retires a removed variant with order history exactly once and hides it from the editor', async () => {
+    const created = (await A('post', '/products').send(await productPayload())).body.data;
+    const sold = created.variants[0];
+    await placeOrder({ variantId: sold.id });
+
+    const payload = await productPayload();
+    const keep = created.variants.slice(1).map((v: { id: string; sizeId: string; colorId: string; sku: string }) => ({
+      id: v.id, sizeId: v.sizeId, colorId: v.colorId, sku: v.sku, stock: 5, lowStockThreshold: 3, isActive: true,
+    }));
+    const body = { ...payload, images: [], status: 'DRAFT', variants: keep };
+
+    const first = await A('put', `/products/${created.id}`).send(body);
+    expect(first.status).toBe(200);
+    expect(first.body.data.variants.map((v: { id: string }) => v.id)).not.toContain(sold.id);
+    const retiredSku = (await prisma.productVariant.findUniqueOrThrow({ where: { id: sold.id } })).sku;
+    expect(retiredSku).toMatch(/-RETIRED-/);
+
+    await A('put', `/products/${created.id}`).send(body).expect(200);
+    const after = await prisma.productVariant.findUniqueOrThrow({ where: { id: sold.id } });
+    expect(after.sku).toBe(retiredSku); // not renamed again
+    expect(after.isActive).toBe(false);
+  });
+
   it('archives products with sales history instead of deleting them', async () => {
     const fresh = (await A('post', '/products').send(await productPayload())).body.data;
     expect((await A('delete', `/products/${fresh.id}`)).body.data).toEqual({ archived: false });

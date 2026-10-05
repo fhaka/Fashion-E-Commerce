@@ -66,6 +66,14 @@ export function AccountShell({ children }: { children: ReactNode }) {
                 </li>
               );
             })}
+            {user.role === 'ADMIN' && (
+              <li>
+                <Link href="/admin" className="flex items-center gap-3 border border-stone-200 px-4 py-3 text-sm whitespace-nowrap text-stone-600 hover:text-ink lg:border-0 lg:border-l-2 lg:border-transparent">
+                  <LayoutGrid className="h-4 w-4" strokeWidth={1.4} />
+                  Admin dashboard
+                </Link>
+              </li>
+            )}
             <li>
               <button
                 type="button"

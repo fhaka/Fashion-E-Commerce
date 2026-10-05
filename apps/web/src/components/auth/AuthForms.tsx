@@ -49,7 +49,7 @@ export function LoginForm() {
     try {
       const user = await login(parsed.data.email, parsed.data.password);
       toast.success(`Welcome back, ${user.firstName}`);
-      router.replace(safeNext(params.get('next')));
+      router.replace(safeNext(params.get('next'), user.role === 'ADMIN' ? '/admin' : '/account'));
     } catch (err) {
       handleError(err, setErrors, setFormError);
       setLoading(false);

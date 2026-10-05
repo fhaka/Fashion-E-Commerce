@@ -132,6 +132,11 @@ export function Header({ categories, collections }: { categories: CategoryNode[]
 
             {/* Right: actions */}
             <div className="flex items-center justify-end gap-1 sm:gap-2">
+              {user?.role === 'ADMIN' && (
+                <Link href="/admin" className="mr-2 hidden border border-current px-2.5 py-1 text-[0.62rem] tracking-[0.16em] uppercase md:block">
+                  Admin
+                </Link>
+              )}
               <button type="button" onClick={openSearch} className="p-2" aria-label="Search">
                 <Search className="h-[1.15rem] w-[1.15rem]" strokeWidth={1.4} />
               </button>

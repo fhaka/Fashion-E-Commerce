@@ -53,12 +53,15 @@ const adminDetailInclude = {
   },
 } satisfies Prisma.ProductInclude;
 
+/** Variants retired by an earlier edit (kept only for order history) carry this SKU marker. */
+const RETIRED = '-RETIRED-';
+
 function toAdminDetail(p: Prisma.ProductGetPayload<{ include: typeof adminDetailInclude }>) {
   const { collections, variants, ...rest } = p;
   return {
     ...rest,
     collectionIds: collections.map((c) => c.collectionId),
-    variants: variants.map(({ inventory, _count, ...v }) => ({
+    variants: variants.filter((v) => !v.sku.includes(RETIRED)).map(({ inventory, _count, ...v }) => ({
       ...v,
       stock: inventory?.quantity ?? 0,
       reserved: inventory?.reserved ?? 0,
@@ -220,10 +223,10 @@ export async function updateProduct(id: string, input: AdminProductInput, actorI
 
     // Variants: update, create, then remove/deactivate missing ones.
     const inputIds = new Set(input.variants.map((v) => v.id).filter(Boolean));
-    for (const old of existing.variants.filter((v) => !inputIds.has(v.id))) {
+    for (const old of existing.variants.filter((v) => !inputIds.has(v.id) && !v.sku.includes(RETIRED))) {
       if (old._count.orderItems > 0) {
         // Keep history intact — retire the variant and free its SKU for reuse.
-        await tx.productVariant.update({ where: { id: old.id }, data: { isActive: false, sku: `${old.sku}-RETIRED-${Date.now().toString(36)}` } });
+        await tx.productVariant.update({ where: { id: old.id }, data: { isActive: false, sku: `${old.sku}${RETIRED}${Date.now().toString(36)}` } });
       } else {
         await tx.productVariant.delete({ where: { id: old.id } });
       }
