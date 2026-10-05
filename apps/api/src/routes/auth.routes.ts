@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { z } from 'zod';
 import { changePasswordSchema, forgotPasswordSchema, loginSchema, registerSchema, resetPasswordSchema } from '@maison/shared';
 import * as c from '../controllers/auth.controller';
 import { authenticate } from '../middleware/auth';
@@ -9,6 +10,7 @@ export const authRouter = Router();
 
 authRouter.post('/register', authLimiter, validate({ body: registerSchema }), c.register);
 authRouter.post('/login', authLimiter, validate({ body: loginSchema }), c.login);
+authRouter.post('/demo-login', authLimiter, validate({ body: z.object({ role: z.enum(['customer', 'admin']) }) }), c.demoLogin);
 authRouter.post('/refresh', c.refresh);
 authRouter.post('/logout', c.logout);
 authRouter.get('/me', authenticate, c.me);

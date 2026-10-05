@@ -16,6 +16,7 @@ Prisma 6 · JWT auth · Stripe (with a built-in demo mode) · Cloudinary (or loc
 - [Environment variables](#environment-variables)
 - [Database: migrations and seed data](#database-migrations-and-seed-data)
 - [Scripts](#scripts)
+- [Public sales demo](#public-sales-demo)
 - [Payments: demo mode and Stripe](#payments-demo-mode-and-stripe)
 - [Testing](#testing)
 - [Deployment](#deployment)
@@ -204,8 +205,16 @@ Run from the repository root:
 | `npm run typecheck` | TypeScript in every workspace |
 | `npm test` | API integration tests (needs the database running) |
 | `npm run db:up` / `db:down` | Start or stop the development database |
+| `npm run demo:reset` | Reset a public demo to fresh demo data (only with `DEMO_MODE=true`) |
 
 ---
+
+## Public sales demo
+
+Set `DEMO_MODE=true` (or deploy with `docker-compose.demo.yml`) to run a public demo:
+one-click "Customer view" and "Open the admin" entry, protected demo accounts, no outgoing
+email, and an automatic nightly reset (`npm run demo:reset` resets it on demand). See
+[docs/DEPLOYMENT.md → Public sales demo](docs/DEPLOYMENT.md#public-sales-demo).
 
 ## Payments: demo mode and Stripe
 
@@ -225,8 +234,8 @@ npm run db:up
 npm test
 ```
 
-There are 113 API integration tests, covering auth, the catalogue, cart, checkout and payments
-(including stock races), admin and account. They run against a separate `maison_test` database
+There are 123 API integration tests, covering auth, the catalogue, cart, checkout and payments
+(including stock races), admin, account and demo mode. They run against a separate `maison_test` database
 (your `DATABASE_URL` name plus `_test`, or `TEST_DATABASE_URL`), which is migrated and re-seeded before every run. The
 setup refuses to touch any database whose name doesn't end in `_test`.
 

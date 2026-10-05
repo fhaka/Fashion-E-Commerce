@@ -5,6 +5,7 @@ import { env } from '../config/env';
 import { logger } from '../config/logger';
 import { prisma } from '../db/prisma';
 import { sendEmail } from '../providers/email';
+import { assertNotDemoAccount } from './demo.service';
 import { ApiError } from '../utils/ApiError';
 import { addDays, randomToken, sha256 } from '../utils/helpers';
 import { signAccessToken } from '../utils/tokens';
@@ -30,7 +31,7 @@ export function toPublicUser(u: User) {
   };
 }
 
-interface SessionMeta {
+export interface SessionMeta {
   userAgent?: string;
   ip?: string;
 }
@@ -42,7 +43,7 @@ export interface AuthResult {
   refresh?: { token: string; expiresAt: Date };
 }
 
-async function issueSession(user: User, meta: SessionMeta): Promise<AuthResult> {
+export async function issueSession(user: User, meta: SessionMeta): Promise<AuthResult> {
   const token = randomToken(32);
   const expiresAt = addDays(new Date(), env.REFRESH_TOKEN_TTL_DAYS);
   await prisma.refreshToken.create({
@@ -176,6 +177,7 @@ export async function resetPassword(token: string, password: string) {
 }
 
 export async function changePassword(userId: string, currentPassword: string, newPassword: string, keepTokenRaw?: string) {
+  await assertNotDemoAccount(userId, 'Changing the password');
   const user = await prisma.user.findUniqueOrThrow({ where: { id: userId } });
   if (!(await bcrypt.compare(currentPassword, user.passwordHash))) {
     throw ApiError.validation({ fields: { currentPassword: 'Current password is incorrect' } });

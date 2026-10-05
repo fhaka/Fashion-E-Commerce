@@ -128,6 +128,46 @@ Back up before every deploy that changes the schema.
 
 ---
 
+## Public sales demo
+
+Run a demo that prospects can try on their own: the full shop **and** the admin, with
+nothing for them to break. Deploy it exactly like option A, on its own domain (e.g.
+`demo.yourstudio.com`), adding the demo override file:
+
+```bash
+docker compose -f docker-compose.prod.yml -f docker-compose.demo.yml   --env-file .env.production up -d --build
+```
+
+What demo mode does:
+
+| | |
+|---|---|
+| Demo data | Loaded automatically on first start (products, 220 orders of history, customers, reviews, coupons) |
+| One-click entry | A floating "Live demo" panel and the sign-in page offer **Customer view** and **Open the admin**, with no passwords to share |
+| Nightly reset | Every day at `DEMO_RESET_HOUR_UTC` (default 03:00 UTC): data re-seeded, visitor uploads deleted, page cache refreshed |
+| Guardrails | Demo accounts can't change their password; roles can't be changed; admins can't be disabled |
+| No real email | Visitors type arbitrary addresses, so email is only written to the log, even if SMTP is configured |
+| Payments | Simulated (keep Stripe keys empty). Checkout has a **Fill in demo details** button with a test card; card `4000 0000 0000 0002` shows a declined payment |
+
+**Before a sales call**, give the prospect a fresh shop:
+
+```bash
+docker compose -f docker-compose.prod.yml -f docker-compose.demo.yml   --env-file .env.production exec demo-reset npm run demo:reset
+```
+
+**Suggested demo script (10 minutes):**
+1. Home page: hero, collections, scroll animations; resize to mobile.
+2. Shop: filters, sorting, quick add; product page with gallery zoom, sizes, stock and reviews.
+3. Add to bag, apply `WELCOME10`, check out with **Fill in demo details**.
+4. **Open the admin**: the new order on the dashboard, change its status to *Shipped* with a tracking number.
+5. Edit a product's price in the admin, then refresh the storefront: it updates instantly.
+6. Reports (CSV export), inventory, coupons and banners.
+
+The reset refuses to run unless `DEMO_MODE=true`, so the demo tooling can never wipe a
+client's real shop. Never deploy a client's shop with `docker-compose.demo.yml`.
+
+---
+
 ## B. Managed platforms
 
 The browser always talks to the **web** domain, and Next.js proxies `/api/v1/*` to the API,

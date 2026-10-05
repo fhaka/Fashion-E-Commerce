@@ -9,6 +9,7 @@ import type { OrderDetail } from '@/lib/types';
 import { EASE } from '@/lib/utils';
 import { useAuth } from '@/stores/auth';
 import { useCart } from '@/stores/cart';
+import { useDemo } from '../demo/Demo';
 import { AddressBlock, OrderItems, OrderTotals } from '../order/OrderParts';
 import { ButtonLink } from '../ui/Button';
 
@@ -17,6 +18,7 @@ import { ButtonLink } from '../ui/Button';
  * returned at checkout (guests). Polls briefly while a Stripe webhook confirms payment.
  */
 export function OrderConfirmation() {
+  const demo = useDemo();
   const { orderNumber } = useParams<{ orderNumber: string }>();
   const params = useSearchParams();
   const key = params.get('key') ?? params.get('payment_intent_client_secret') ?? undefined;
@@ -82,7 +84,9 @@ export function OrderConfirmation() {
         </motion.h1>
         <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5, duration: 0.8 }} className="mx-auto mt-5 max-w-lg text-stone-600">
           {confirmed
-            ? `Your order is confirmed. A confirmation has been sent to ${order.email}. We will let you know as soon as it ships.`
+            ? demo
+              ? `Your order is confirmed. In a live shop, a confirmation email goes to ${order.email}; this demo doesn't send emails. Open the admin to see the order arrive.`
+              : `Your order is confirmed. A confirmation has been sent to ${order.email}. We will let you know as soon as it ships.`
             : 'This usually takes a few seconds. You can safely stay on this page.'}
         </motion.p>
       </div>

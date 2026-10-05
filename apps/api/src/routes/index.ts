@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { contactSchema, newsletterSchema, trackOrderSchema, unsubscribeSchema } from '@maison/shared';
 import * as account from '../controllers/account.controller';
 import { prisma } from '../db/prisma';
+import { demoInfo } from '../services/demo.service';
 import { formLimiter } from '../middleware/rateLimit';
 import { validate } from '../middleware/validate';
 import { accountRouter, wishlistRouter } from './account.routes';
@@ -16,6 +17,12 @@ export const apiRouter = Router();
 apiRouter.get('/health', async (_req, res) => {
   await prisma.$queryRaw`SELECT 1`;
   res.json({ data: { status: 'ok', database: 'ok' } });
+});
+
+/** Public storefront configuration (demo mode now; store settings and plan features later). */
+apiRouter.get('/site', (_req, res) => {
+  res.set('Cache-Control', 'public, max-age=60');
+  res.json({ data: { demo: demoInfo() } });
 });
 
 apiRouter.use('/auth', authRouter);

@@ -1,0 +1,49 @@
+# ─────────────────────────────────────────────────────────────
+#  Maison — public sales demo (layered on top of the production stack)
+#
+#    docker compose -f docker-compose.prod.yml -f docker-compose.demo.yml \
+#      --env-file .env.production up -d --build
+#
+#  Adds DEMO_MODE (one-click demo sign-in, guardrails, no outgoing email) and a job
+#  that loads the demo shop on first start and resets it every night at
+#  DEMO_RESET_HOUR_UTC (default 03:00 UTC). Reset on demand before a sales call:
+#
+#    docker compose -f docker-compose.prod.yml -f docker-compose.demo.yml \
+#      --env-file .env.production exec demo-reset npm run demo:reset
+#
+#  Never use this file for a client's live shop.
+# ─────────────────────────────────────────────────────────────
+
+x-demo-env: &demo-env
+  DEMO_MODE: "true"
+  DEMO_RESET_HOUR_UTC: ${DEMO_RESET_HOUR_UTC:-3}
+
+services:
+  api:
+    environment:
+      <<: *demo-env
+
+  migrate:
+    environment:
+      <<: *demo-env
+
+  demo-reset:
+    image: maison-api-tools
+    restart: unless-stopped
+    command: ["npm", "run", "demo:scheduler"]
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://${POSTGRES_USER:-maison}:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-maison}?schema=public
+      WEB_URL: https://${DOMAIN:?set DOMAIN}
+      STOREFRONT_INTERNAL_URL: http://web:3000
+      REVALIDATE_SECRET: ${REVALIDATE_SECRET:-}
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME:-}
+      PRISMA_HIDE_UPDATE_MESSAGE: "1"
+      <<: *demo-env
+    volumes:
+      # Same volume as the API, so a reset also clears images uploaded by demo visitors.
+      - uploads:/app/apps/api/uploads
+    depends_on:
+      # Wait for the storefront so each reset can refresh its page cache.
+      web:
+        condition: service_healthy

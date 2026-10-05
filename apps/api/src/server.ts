@@ -13,8 +13,9 @@ async function main() {
   const server = app.listen(env.PORT, () => {
     logger.info(`🧵 Maison API listening on http://localhost:${env.PORT} (${env.NODE_ENV})`);
     logger.info(
-      `   payments: ${env.stripeEnabled ? 'Stripe' : 'MOCK (test mode)'} · storage: ${env.cloudinaryEnabled ? 'Cloudinary' : 'local disk'} · email: ${env.SMTP_HOST ? 'SMTP' : 'log only'}`,
+      `   payments: ${env.stripeEnabled ? 'Stripe' : 'MOCK (test mode)'} · storage: ${env.cloudinaryEnabled ? 'Cloudinary' : 'local disk'} · email: ${env.SMTP_HOST && !env.DEMO_MODE ? 'SMTP' : 'log only'}`,
     );
+    if (env.DEMO_MODE) logger.warn(`   DEMO MODE: one-click demo sign-in enabled, data resets daily at ${env.DEMO_RESET_HOUR_UTC}:00 UTC`);
   });
 
   // Release stock held by abandoned checkouts.

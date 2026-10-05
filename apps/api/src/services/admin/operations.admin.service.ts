@@ -5,6 +5,7 @@ import { sendEmail } from '../../providers/email';
 import { ApiError } from '../../utils/ApiError';
 import { pageMeta, paginate } from '../../utils/helpers';
 import { toOrderDetail } from '../account.service';
+import { isDemoAccount } from '../demo.service';
 import { cancelPendingOrder, refundOrder } from '../order.service';
 import { refreshProductRating } from '../review.service';
 import { REVENUE_STATUSES } from './stats.service';
@@ -219,6 +220,13 @@ export async function getCustomer(id: string) {
 export async function updateCustomer(id: string, input: { isActive?: boolean; role?: Role }, actorId: string) {
   if (id === actorId && (input.isActive === false || input.role === 'CUSTOMER')) {
     throw ApiError.badRequest('You cannot deactivate or demote your own account');
+  }
+  if (env.DEMO_MODE) {
+    if (input.role !== undefined) throw ApiError.forbidden('Changing roles is disabled in the demo');
+    const target = await prisma.user.findUnique({ where: { id }, select: { role: true, email: true } });
+    if (input.isActive === false && target && (target.role === 'ADMIN' || isDemoAccount(target.email))) {
+      throw ApiError.forbidden('Disabling this account is not allowed in the demo');
+    }
   }
   const user = await prisma.user.update({ where: { id }, data: input });
   if (input.isActive === false) {

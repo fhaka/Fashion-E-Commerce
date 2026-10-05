@@ -216,3 +216,14 @@ export interface SearchSuggestions {
   categories: { name: string; slug: string }[];
   collections: { name: string; slug: string }[];
 }
+
+export interface DemoInfo {
+  resetHourUtc: number;
+  nextResetAt: string;
+  roles: ('customer' | 'admin')[];
+}
+
+/** Public storefront configuration from `GET /site`. */
+export interface SiteConfig {
+  demo: DemoInfo | null;
+}

@@ -7,7 +7,7 @@ import type { NextRequest } from 'next/server';
  * reflects new prices, stock, banners etc. on the very next request.
  * Protected by a shared secret (REVALIDATE_SECRET) — never exposed to browsers.
  */
-const ALLOWED = /^(products|categories|collections|banners|product:[a-z0-9-]{1,120})$/;
+const ALLOWED = /^(products|categories|collections|banners|site|product:[a-z0-9-]{1,120})$/;
 
 function authorised(header: string | null) {
   const secret = process.env.REVALIDATE_SECRET;

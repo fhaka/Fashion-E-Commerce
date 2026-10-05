@@ -49,7 +49,8 @@ class SmtpEmailProvider implements EmailProvider {
 
 let provider: EmailProvider | null = null;
 export function getEmailProvider(): EmailProvider {
-  provider ??= env.SMTP_HOST ? new SmtpEmailProvider() : new ConsoleEmailProvider();
+  // Demo visitors type arbitrary addresses, so the public demo never sends real email.
+  provider ??= env.SMTP_HOST && !env.DEMO_MODE ? new SmtpEmailProvider() : new ConsoleEmailProvider();
   return provider;
 }
 

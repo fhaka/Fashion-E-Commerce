@@ -18,6 +18,7 @@
     "db:deploy": "npm run db:deploy -w @maison/api",
     "db:seed": "npm run db:seed -w @maison/api",
     "admin:create": "npm run admin:create -w @maison/api",
+    "demo:reset": "npm run demo:reset -w @maison/api",
     "db:reset": "npm run db:reset -w @maison/api",
     "dev:api": "npm run dev -w @maison/api",
     "dev:web": "npm run dev -w @maison/web",

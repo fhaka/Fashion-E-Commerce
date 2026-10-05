@@ -1,10 +1,12 @@
 import type { Metadata, Viewport } from 'next';
 import { Cormorant_Garamond, Inter } from 'next/font/google';
 import { CartDrawer } from '@/components/cart/CartDrawer';
+import { DemoBadge, DemoProvider } from '@/components/demo/Demo';
 import { Providers } from '@/components/layout/Providers';
 import { SearchOverlay } from '@/components/layout/SearchOverlay';
 import { Toaster } from '@/components/layout/Toaster';
 import { deferRenderIfApiOffline } from '@/lib/buildGuard';
+import { getSiteConfig } from '@/lib/site';
 import { SITE_NAME, SITE_URL } from '@/lib/utils';
 import './globals.css';
 
@@ -47,6 +49,7 @@ export const viewport: Viewport = {
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   await deferRenderIfApiOffline();
+  const site = await getSiteConfig();
   return (
     <html lang="en" className={`${inter.variable} ${cormorant.variable}`}>
       <body>
@@ -54,10 +57,13 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           Skip to content
         </a>
         <Providers>
-          {children}
-          <CartDrawer />
-          <SearchOverlay />
-          <Toaster />
+          <DemoProvider demo={site.demo}>
+            {children}
+            <CartDrawer />
+            <SearchOverlay />
+            <Toaster />
+            <DemoBadge />
+          </DemoProvider>
         </Providers>
       </body>
     </html>

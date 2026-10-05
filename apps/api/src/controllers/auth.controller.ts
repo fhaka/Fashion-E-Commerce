@@ -1,5 +1,6 @@
 import type { Request, Response } from 'express';
 import * as auth from '../services/auth.service';
+import { demoLogin as startDemoSession, type DemoRole } from '../services/demo.service';
 import { mergeGuestCart } from '../services/cart.service';
 import { clearCartCookie, clearRefreshCookie, getCartSession, REFRESH_COOKIE, setRefreshCookie } from '../utils/cookies';
 
@@ -25,6 +26,13 @@ export async function register(req: Request, res: Response) {
 
 export async function login(req: Request, res: Response) {
   const result = await auth.login(req.valid.body, meta(req));
+  await adoptGuestCart(req, res, result.user.id);
+  respond(res, result);
+}
+
+/** Public demo only: one-click sign-in as the demo customer or admin. */
+export async function demoLogin(req: Request, res: Response) {
+  const result = await startDemoSession(req.valid.body.role as DemoRole, meta(req));
   await adoptGuestCart(req, res, result.user.id);
   respond(res, result);
 }

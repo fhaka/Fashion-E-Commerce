@@ -51,6 +51,12 @@ const schema = z.object({
   SMTP_PASSWORD: z.string().optional().transform((v) => v || undefined),
   EMAIL_FROM: z.string().default('Maison <no-reply@maison.test>'),
 
+  /** Public sales demo: one-click demo sign-in, guardrails, no outgoing email. Never on a client's live shop. */
+  DEMO_MODE: bool,
+  DEMO_ADMIN_EMAIL: z.string().email().default('admin@maison.test'),
+  DEMO_CUSTOMER_EMAIL: z.string().email().default('ava@maison.test'),
+  DEMO_RESET_HOUR_UTC: z.coerce.number().int().min(0).max(23).default(3),
+
   ORDER_RESERVATION_MINUTES: z.coerce.number().int().positive().default(30),
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']).default('info'),
 });

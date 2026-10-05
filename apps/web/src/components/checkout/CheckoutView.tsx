@@ -17,6 +17,7 @@ import { Checkbox, FormError, Input, zodFieldErrors } from '../ui/Field';
 import { Img } from '../ui/Img';
 import { DemoCardForm, EMPTY_CARD, demoOutcome, validateCard, type CardValues } from './DemoCardForm';
 import { StripePayment } from './StripePayment';
+import { useDemo } from '../demo/Demo';
 
 interface QuoteLine {
   variantId: string;
@@ -74,6 +75,7 @@ export function CheckoutView() {
   const router = useRouter();
   const { user, status } = useAuth();
   const { cart, loaded: cartLoaded, fetch: refetchCart } = useCart();
+  const demo = useDemo();
 
   // "Buy now" checks out a single variant without touching the bag.
   const buyVariant = params.get('buy');
@@ -153,6 +155,15 @@ export function CheckoutView() {
       })
       .catch(() => undefined);
   }, [user]);
+
+  // Public demo: sample contact, address and test card so prospects never type real data.
+  const fillDemoDetails = () => {
+    if (!user) setEmail('demo.shopper@example.com');
+    setAddressId('new');
+    setAddress({ ...EMPTY_ADDRESS, fullName: user ? `${user.firstName} ${user.lastName}` : 'Demo Shopper', line1: '350 Fifth Avenue', city: 'New York', state: 'NY', postalCode: '10118', country: 'US', phone: '+1 212 555 0100' });
+    setCard({ number: '4242 4242 4242 4242', name: user ? `${user.firstName} ${user.lastName}` : 'Demo Shopper', expiry: '12 / 30', cvc: '123' });
+    setErrors({});
+  };
 
   // Server-side quote: prices, discount, shipping and tax are always computed by the API.
   const cartSignature = cart.items.map((i) => `${i.variantId}:${i.quantity}`).join();
@@ -314,6 +325,15 @@ export function CheckoutView() {
               <Link href="/cart" className="underline underline-offset-4">
                 Review your bag
               </Link>
+            </div>
+          )}
+
+          {demo && !locked && (
+            <div className="mb-10 flex flex-col gap-3 border border-camel/40 bg-camel/10 p-4 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-sm text-stone-700">Demo store: use sample details instead of your own.</p>
+              <Button type="button" size="sm" variant="outline" onClick={fillDemoDetails}>
+                Fill in demo details
+              </Button>
             </div>
           )}
 

@@ -64,6 +64,7 @@ Legend: 🔓 public · 👤 signed-in customer · 🔐 admin · ⏱ rate-limited
 |---|---|---|
 | GET | `/health` (outside `/api/v1`) | Process liveness (used by Docker health checks) |
 | GET | `/api/v1/health` | Liveness plus a database check |
+| GET | `/api/v1/site` | Public storefront configuration: `{ demo: null \| { resetHourUtc, nextResetAt, roles } }` |
 
 ## Auth: `/auth`
 
@@ -71,6 +72,7 @@ Legend: 🔓 public · 👤 signed-in customer · 🔐 admin · ⏱ rate-limited
 |---|---|---|---|
 | POST | `/auth/register` | 🔓⏱ | `{ email, password, firstName, lastName, newsletter? }` → `{ user, accessToken }` |
 | POST | `/auth/login` | 🔓⏱ | `{ email, password }` → `{ user, accessToken }` |
+| POST | `/auth/demo-login` | 🔓⏱ | Demo mode only (404 otherwise): `{ role: "customer" \| "admin" }` → `{ user, accessToken }` |
 | POST | `/auth/refresh` | 🔓 | Uses the refresh cookie → `{ user, accessToken }` |
 | POST | `/auth/logout` | 🔓 | Revokes the refresh token and clears the cookies |
 | GET | `/auth/me` | 👤 | Current user |

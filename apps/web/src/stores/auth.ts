@@ -9,6 +9,8 @@ interface AuthState {
   status: 'loading' | 'authenticated' | 'guest';
   init: () => Promise<void>;
   login: (email: string, password: string) => Promise<User>;
+  /** Public demo only: one-click sign-in as the demo customer or admin. */
+  demoLogin: (role: 'customer' | 'admin') => Promise<User>;
   register: (input: { firstName: string; lastName: string; email: string; password: string; newsletter?: boolean }) => Promise<User>;
   logout: () => Promise<void>;
   setUser: (user: User) => void;
@@ -44,6 +46,14 @@ export const useAuth = create<AuthState>((set) => ({
 
   login: async (email, password) => {
     const res = await api<{ user: User; accessToken: string }>('/auth/login', { method: 'POST', body: { email, password }, auth: false });
+    setAccessToken(res.accessToken);
+    set({ user: res.user, status: 'authenticated' });
+    await afterSignIn();
+    return res.user;
+  },
+
+  demoLogin: async (role) => {
+    const res = await api<{ user: User; accessToken: string }>('/auth/demo-login', { method: 'POST', body: { role }, auth: false });
     setAccessToken(res.accessToken);
     set({ user: res.user, status: 'authenticated' });
     await afterSignIn();
