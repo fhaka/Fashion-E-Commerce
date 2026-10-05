@@ -1,0 +1,21 @@
+**/node_modules
+**/.next
+**/dist
+**/coverage
+**/*.log
+**/*.tsbuildinfo
+**/next-env.d.ts
+.git
+.github
+.claude
+.vscode
+docs
+*.md
+
+# Never send secrets to the build context
+**/.env
+**/.env.*
+!**/.env.example
+
+# Uploaded images live in a volume, not in the image
+apps/api/uploads/*

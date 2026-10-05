@@ -22,7 +22,7 @@ Browser ──► Next.js (apps/web) ──/api/* rewrite──► Express API (
 | `routes/` | URL → middleware chain → controller (`routes/admin/*` for the dashboard) |
 | `controllers/` | Thin HTTP layer: read `req.valid`, call a service, shape the response |
 | `services/` | Business logic: pricing, coupons, cart, checkout, inventory, orders, reports |
-| `providers/` | Swappable integrations: `payment/` (Stripe, Mock), `storage/` (Cloudinary, Local), `email/` (Console) |
+| `providers/` | Swappable integrations: `payment/` (Stripe, Mock), `storage/` (Cloudinary, Local), `email/` (SMTP, or Console in development) |
 | `utils/` | `ApiError`, tokens, slugify, pagination, sanitising |
 
 **Conventions:** success responses are `{ data, meta? }`; errors are `{ error: { code, message, details? } }`. Money is integer cents everywhere. Validated input is read from `req.valid` (Express 5 makes `req.query` read-only).
@@ -85,4 +85,4 @@ All motion respects `prefers-reduced-motion`.
 6. ✅ Checkout, auth and account pages
 7. ✅ Admin dashboard
 8. ✅ SEO, performance and accessibility pass
-9. Documentation and deployment guides
+9. ✅ Documentation and deployment guides

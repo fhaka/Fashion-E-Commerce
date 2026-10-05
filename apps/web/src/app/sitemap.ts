@@ -1,4 +1,5 @@
 import type { MetadataRoute } from 'next';
+import { deferRenderIfApiOffline } from '@/lib/buildGuard';
 import { getCategoryTree, getCollections, getProducts } from '@/lib/catalog';
 import { SITE_URL } from '@/lib/utils';
 
@@ -26,6 +27,7 @@ async function allProducts() {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  await deferRenderIfApiOffline();
   const now = new Date();
   const [categories, collections, products] = await Promise.all([getCategoryTree(), getCollections(), allProducts()]);
 

@@ -1,3 +1,4 @@
+import path from 'node:path';
 import type { NextConfig } from 'next';
 
 /** Express API origin. The browser never calls it directly — `/api/v1/*` is proxied below. */
@@ -18,6 +19,9 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+  // Self-contained server bundle for the Docker image (apps/web/Dockerfile).
+  output: 'standalone',
+  outputFileTracingRoot: path.join(__dirname, '../..'),
   transpilePackages: ['@maison/shared'],
   images: {
     formats: ['image/avif', 'image/webp'],
@@ -37,7 +41,11 @@ const nextConfig: NextConfig = {
     dangerouslyAllowLocalIP: apiIsLocal && process.env.NODE_ENV !== 'production',
   },
   async rewrites() {
-    return [{ source: '/api/v1/:path*', destination: `${API_ORIGIN}/api/v1/:path*` }];
+    return [
+      { source: '/api/v1/:path*', destination: `${API_ORIGIN}/api/v1/:path*` },
+      // Locally stored admin uploads, so the API can stay private behind the storefront in production.
+      { source: '/uploads/:path*', destination: `${API_ORIGIN}/uploads/:path*` },
+    ];
   },
   async headers() {
     return [{ source: '/:path*', headers: securityHeaders }];

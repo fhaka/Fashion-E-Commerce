@@ -4,6 +4,7 @@ import { CartDrawer } from '@/components/cart/CartDrawer';
 import { Providers } from '@/components/layout/Providers';
 import { SearchOverlay } from '@/components/layout/SearchOverlay';
 import { Toaster } from '@/components/layout/Toaster';
+import { deferRenderIfApiOffline } from '@/lib/buildGuard';
 import { SITE_NAME, SITE_URL } from '@/lib/utils';
 import './globals.css';
 
@@ -44,8 +45,8 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
-
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  await deferRenderIfApiOffline();
   return (
     <html lang="en" className={`${inter.variable} ${cormorant.variable}`}>
       <body>

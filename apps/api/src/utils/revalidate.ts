@@ -10,7 +10,7 @@ import { logger } from '../config/logger';
 export function revalidateStorefront(tags: string[]) {
   if (!env.REVALIDATE_SECRET || env.isTest || !tags.length) return;
   const unique = [...new Set(tags)];
-  fetch(`${env.WEB_URL}/api/revalidate`, {
+  fetch(`${env.STOREFRONT_INTERNAL_URL ?? env.WEB_URL}/api/revalidate`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'x-revalidate-secret': env.REVALIDATE_SECRET },
     body: JSON.stringify({ tags: unique }),

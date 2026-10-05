@@ -86,9 +86,24 @@ async function clear() {
   ]);
 }
 
+/**
+ * The seed starts by deleting everything. In production that must never hit a live shop:
+ * refuse if there are already orders unless SEED_ALLOW_RESET=true is set explicitly.
+ */
+async function guardAgainstWipingRealData() {
+  if (process.env.NODE_ENV !== 'production' || process.env.SEED_ALLOW_RESET === 'true') return;
+  const orders = await prisma.order.count();
+  if (orders > 0) {
+    console.error(`❌ Refusing to seed: this production database already has ${orders} order(s) and seeding deletes all data.`);
+    console.error('   Set SEED_ALLOW_RESET=true only if you really want to wipe it.');
+    process.exit(1);
+  }
+}
+
 async function main() {
   const started = Date.now();
   console.log('🌱 Seeding Maison…');
+  await guardAgainstWipingRealData();
   await clear();
 
   /* ── Sizes & colours ── */

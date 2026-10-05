@@ -153,7 +153,8 @@ export async function forgotPassword(email: string) {
   await prisma.passwordResetToken.create({
     data: { userId: user.id, tokenHash: sha256(token), expiresAt: new Date(Date.now() + RESET_TOKEN_TTL_MS) },
   });
-  await sendEmail({
+  // Not awaited: waiting on the mail server would make known emails measurably slower to answer.
+  void sendEmail({
     to: user.email,
     subject: 'Reset your Maison password',
     text: `Dear ${user.firstName},\n\nUse the link below to choose a new password. It expires in 1 hour.\n\n${env.WEB_URL}/reset-password?token=${token}\n\nIf you did not request this, you can ignore this email.`,

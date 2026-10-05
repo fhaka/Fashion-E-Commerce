@@ -17,7 +17,7 @@ export function createApp() {
 
   app.disable('x-powered-by');
   // Behind a reverse proxy / load balancer in production (needed for correct client IPs in rate limiting).
-  app.set('trust proxy', env.isProd ? 1 : false);
+  app.set('trust proxy', env.isProd ? env.TRUST_PROXY : false);
 
   app.use(
     helmet({

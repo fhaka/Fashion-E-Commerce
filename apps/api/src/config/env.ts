@@ -35,6 +35,21 @@ const schema = z.object({
 
   /** Shared with the storefront so admin changes refresh cached pages instantly (optional). */
   REVALIDATE_SECRET: z.string().optional().transform((v) => v || undefined),
+  /** Private address of the storefront for server-to-server calls (defaults to WEB_URL). */
+  STOREFRONT_INTERNAL_URL: z.string().url().optional().or(z.literal('')).transform((v) => v?.replace(/\/$/, '') || undefined),
+
+  /**
+   * Number of reverse proxies in front of the API (production only). Used to read the real
+   * client IP for rate limiting. Docker prod stack: Caddy → Next.js → API = 2.
+   */
+  TRUST_PROXY: z.coerce.number().int().min(0).max(10).default(1),
+
+  /** Outgoing email over SMTP. Without SMTP_HOST, emails are written to the log (development). */
+  SMTP_HOST: z.string().optional().transform((v) => v || undefined),
+  SMTP_PORT: z.coerce.number().int().positive().default(587),
+  SMTP_USER: z.string().optional().transform((v) => v || undefined),
+  SMTP_PASSWORD: z.string().optional().transform((v) => v || undefined),
+  EMAIL_FROM: z.string().default('Maison <no-reply@maison.test>'),
 
   ORDER_RESERVATION_MINUTES: z.coerce.number().int().positive().default(30),
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']).default('info'),

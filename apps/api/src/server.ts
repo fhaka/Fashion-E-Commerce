@@ -12,7 +12,9 @@ async function main() {
 
   const server = app.listen(env.PORT, () => {
     logger.info(`🧵 Maison API listening on http://localhost:${env.PORT} (${env.NODE_ENV})`);
-    logger.info(`   payments: ${env.stripeEnabled ? 'Stripe' : 'MOCK (test mode)'} · storage: ${env.cloudinaryEnabled ? 'Cloudinary' : 'local disk'}`);
+    logger.info(
+      `   payments: ${env.stripeEnabled ? 'Stripe' : 'MOCK (test mode)'} · storage: ${env.cloudinaryEnabled ? 'Cloudinary' : 'local disk'} · email: ${env.SMTP_HOST ? 'SMTP' : 'log only'}`,
+    );
   });
 
   // Release stock held by abandoned checkouts.

@@ -1,0 +1,23 @@
+# Maison — public entry point. Caddy obtains and renews HTTPS certificates automatically
+# for $DOMAIN (its DNS A/AAAA record must point at this server, ports 80 and 443 open).
+# With DOMAIN=localhost it serves a locally trusted self-signed certificate instead.
+
+{$DOMAIN} {
+	encode zstd gzip
+
+	# Long-lived caching for fingerprinted Next.js assets.
+	@static path /_next/static/*
+	header @static Cache-Control "public, max-age=31536000, immutable"
+
+	reverse_proxy web:3000
+
+	log {
+		output stdout
+		format console
+	}
+}
+
+# Redirect www to the apex domain (remove if you serve from www).
+www.{$DOMAIN} {
+	redir https://{$DOMAIN}{uri} permanent
+}
