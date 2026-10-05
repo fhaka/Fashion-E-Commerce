@@ -14,10 +14,13 @@ import { useUi } from '@/stores/ui';
 import { useWishlist } from '@/stores/wishlist';
 import { MegaMenu, type NavItem } from './MegaMenu';
 import { MobileMenu } from './MobileMenu';
+import { useSite } from './SiteProvider';
+import { Announcements, Wordmark } from './Wordmark';
 
 export function Header({ categories, collections }: { categories: CategoryNode[]; collections: Collection[] }) {
   const pathname = usePathname();
   const hasHero = routeHasHero(pathname);
+  const { storeName, announcements } = useSite();
   const [scrolled, setScrolled] = useState(false);
   const [hidden, setHidden] = useState(false);
   const [active, setActive] = useState<string | null>(null);
@@ -74,12 +77,10 @@ export function Header({ categories, collections }: { categories: CategoryNode[]
         <div
           className={cn(
             'overflow-hidden bg-ink text-bone transition-[height] duration-500 ease-luxe',
-            scrolled ? 'h-0' : 'h-9',
+            scrolled || announcements.length === 0 ? 'h-0' : 'h-9',
           )}
         >
-          <p className="flex h-9 items-center justify-center px-4 text-center text-[0.68rem] tracking-[0.18em] uppercase">
-            Complimentary shipping over $250<span className="max-sm:hidden">&nbsp;· Free 30-day returns</span>
-          </p>
+          <Announcements />
         </div>
 
         <div
@@ -126,8 +127,8 @@ export function Header({ categories, collections }: { categories: CategoryNode[]
             </div>
 
             {/* Logo */}
-            <Link href="/" aria-label="Maison — home" className="font-display text-[1.65rem] leading-none tracking-[0.32em] uppercase lg:text-[1.9rem]">
-              Maison
+            <Link href="/" aria-label={`${storeName} — home`} className="flex justify-center">
+              <Wordmark className="text-[1.65rem] tracking-[0.32em] lg:text-[1.9rem]" logoClassName="h-8 lg:h-9" />
             </Link>
 
             {/* Right: actions */}

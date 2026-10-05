@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import type { CategoryNode } from '@/lib/types';
+import type { CategoryNode, SiteSettings } from '@/lib/types';
 import { NewsletterForm } from '../ui/NewsletterForm';
 
 const help = [
@@ -14,13 +14,20 @@ const house = [
   { label: 'Privacy policy', href: '/privacy' },
   { label: 'Terms of sale', href: '/terms' },
 ];
-const social = [
-  { label: 'Instagram', href: 'https://instagram.com' },
-  { label: 'Pinterest', href: 'https://pinterest.com' },
-  { label: 'TikTok', href: 'https://tiktok.com' },
-];
+const SOCIAL_LABELS: Record<string, string> = {
+  instagram: 'Instagram',
+  facebook: 'Facebook',
+  pinterest: 'Pinterest',
+  tiktok: 'TikTok',
+  x: 'X',
+  youtube: 'YouTube',
+};
 
-export function Footer({ categories }: { categories: CategoryNode[] }) {
+export function Footer({ categories, settings }: { categories: CategoryNode[]; settings: SiteSettings }) {
+  const social = Object.entries(settings.socialLinks)
+    .filter((e): e is [string, string] => !!e[1])
+    .map(([network, href]) => ({ label: SOCIAL_LABELS[network] ?? network, href }));
+  const name = settings.storeName.toUpperCase();
   const shop = [
     { label: 'New arrivals', href: '/shop?isNew=true' },
     ...categories.map((c) => ({ label: c.name, href: `/category/${c.slug}` })),
@@ -33,9 +40,9 @@ export function Footer({ categories }: { categories: CategoryNode[] }) {
         <div className="grid gap-16 lg:grid-cols-12">
           <div className="lg:col-span-5">
             <p className="font-display text-4xl leading-tight sm:text-5xl">
-              Letters from
+              Join our
               <br />
-              the atelier
+              newsletter
             </p>
             <p className="mt-4 max-w-sm text-sm text-bone/60">
               New collections, private sales and the stories behind our pieces. Delivered monthly, never more.
@@ -66,15 +73,17 @@ export function Footer({ categories }: { categories: CategoryNode[] }) {
         </div>
 
         {/* Decorative watermark, drawn as SVG so it isn't treated as low-contrast body text. */}
-        <svg aria-hidden focusable="false" viewBox="0 0 870 190" className="mt-24 w-full select-none" preserveAspectRatio="xMinYMid meet">
+        <svg aria-hidden focusable="false" viewBox={`0 0 ${Math.max(300, name.length * 145)} 190`} className="mt-24 w-full select-none" preserveAspectRatio="xMinYMid meet">
           <text x="0" y="160" className="fill-bone/[0.06] font-display" style={{ fontSize: 205, letterSpacing: '0.06em' }}>
-            MAISON
+            {name}
           </text>
         </svg>
 
         <div className="mt-8 flex flex-col gap-6 border-t border-bone/15 pt-8 text-xs text-bone/50 sm:flex-row sm:items-center sm:justify-between">
-          <p>© {new Date().getFullYear()} Maison Atelier. All rights reserved.</p>
-          <ul className="flex gap-6">
+          <p>
+            © {new Date().getFullYear()} {settings.legalName}. All rights reserved.
+          </p>
+          <ul className="flex flex-wrap gap-6">
             {social.map((s) => (
               <li key={s.label}>
                 <a href={s.href} target="_blank" rel="noopener noreferrer" className="link-underline hover:text-bone">

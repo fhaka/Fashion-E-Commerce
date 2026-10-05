@@ -4,7 +4,7 @@ import { Check } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import type { ListingState } from '@/lib/listing';
 import type { CategoryNode, ProductFacets } from '@/lib/types';
-import { cn } from '@/lib/utils';
+import { cn, STORE_CURRENCY } from '@/lib/utils';
 import { AccordionItem } from '../ui/Accordion';
 
 const GENDER_LABELS: Record<string, string> = { WOMEN: 'Women', MEN: 'Men', UNISEX: 'Unisex' };
@@ -256,7 +256,7 @@ function PriceFilter({ min, max, bounds, onApply }: { min?: number; max?: number
           { id: 'max', label: 'Max', value: hi, set: setHi, placeholder: String(bounds.max) },
         ].map((f) => (
           <label key={f.id} className="flex-1">
-            <span className="mb-1 block text-xs text-stone-500">{f.label} ($)</span>
+            <span className="mb-1 block text-xs text-stone-500">{f.label} ({STORE_CURRENCY})</span>
             <input
               type="number"
               inputMode="numeric"

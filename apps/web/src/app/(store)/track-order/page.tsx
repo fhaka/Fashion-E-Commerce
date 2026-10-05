@@ -5,7 +5,7 @@ import { PageIntro } from '@/components/ui/PageIntro';
 
 export const metadata: Metadata = {
   title: 'Track your order',
-  description: 'Follow your Maison order from our atelier to your door.',
+  description: 'Follow your order from dispatch to your door.',
   alternates: { canonical: '/track-order' },
 };
 

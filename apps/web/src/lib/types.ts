@@ -184,6 +184,8 @@ export interface OrderDetail {
   discountTotal: number;
   shippingTotal: number;
   taxTotal: number;
+  /** Tax was already included in the prices (shown, not added). */
+  taxIncluded: boolean;
   total: number;
   couponCode: string | null;
   shippingMethod: string;
@@ -223,7 +225,61 @@ export interface DemoInfo {
   roles: ('customer' | 'admin')[];
 }
 
+export interface ShippingOption {
+  id: 'standard' | 'express';
+  label: string;
+  eta: string;
+  price: number;
+  /** Free at or above this subtotal (cents); null = never free. */
+  freeOver: number | null;
+}
+
+/** Store settings (Admin → Settings) as published to the storefront. */
+export interface SiteSettings {
+  storeName: string;
+  legalName: string;
+  tagline: string;
+  description: string;
+  logoUrl: string | null;
+  supportEmail: string;
+  phone: string | null;
+  address: string | null;
+  openingHours: string | null;
+  socialLinks: Partial<Record<'instagram' | 'facebook' | 'pinterest' | 'tiktok' | 'x' | 'youtube', string | null>>;
+  announcements: string[];
+  highlights: string[];
+  storyStats: { value: string; label: string }[];
+  shippingStandardPrice: number;
+  shippingStandardEta: string;
+  shippingExpressPrice: number;
+  shippingExpressEta: string;
+  expressEnabled: boolean;
+  freeShippingThreshold: number | null;
+  /** Basis points (800 = 8%). */
+  taxRate: number;
+  pricesIncludeTax: boolean;
+  returnDays: number;
+  themeInk: string;
+  themeBone: string;
+  themeAccent: string;
+  theme: { ink: string; bone: string; accent: string; accentDark: string };
+  currency: string;
+  locale: string;
+  reservationMinutes: number;
+  shippingMethods: ShippingOption[];
+}
+
 /** Public storefront configuration from `GET /site`. */
 export interface SiteConfig {
   demo: DemoInfo | null;
+  settings: SiteSettings;
+}
+
+export interface ContentPage {
+  slug: 'about' | 'shipping-returns' | 'privacy' | 'terms';
+  title: string;
+  intro: string | null;
+  body: string;
+  imageUrl: string | null;
+  updatedAt: string;
 }

@@ -60,7 +60,7 @@ export async function removeFromWishlist(req: Request, res: Response) {
 export async function subscribe(req: Request, res: Response) {
   const { alreadySubscribed } = await engagement.subscribe(req.valid.body.email, req.valid.body.source);
   res.status(alreadySubscribed ? 200 : 201).json({
-    data: { message: alreadySubscribed ? 'You are already on the list.' : 'Welcome to Maison. Check your inbox.' },
+    data: { message: alreadySubscribed ? 'You are already on the list.' : 'Thank you for subscribing. Check your inbox.' },
   });
 }
 export async function unsubscribe(req: Request, res: Response) {

@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const c = await loadCollection((await params).slug);
   return {
     title: c.name,
-    description: c.description ?? `Discover the ${c.name} collection at Maison.`,
+    description: c.description ?? `Discover the ${c.name} collection.`,
     alternates: { canonical: `/collections/${c.slug}` },
     openGraph: { title: c.name, description: c.description ?? undefined, images: c.heroImage ? [{ url: c.heroImage, width: 2400 }] : undefined },
   };

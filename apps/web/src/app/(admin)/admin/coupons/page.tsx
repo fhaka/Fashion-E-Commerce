@@ -9,7 +9,7 @@ import { FormError, Input, Select, zodFieldErrors } from '@/components/ui/Field'
 import { Modal } from '@/components/ui/Modal';
 import { api, ApiRequestError } from '@/lib/api';
 import { formatDate, toCents, toDollars, useAdminQuery } from '@/lib/admin';
-import { formatMoney } from '@/lib/utils';
+import { formatMoney, STORE_CURRENCY } from '@/lib/utils';
 import { toast } from '@/stores/toast';
 
 interface Coupon {
@@ -147,9 +147,9 @@ export default function CouponsPage() {
                 <option value="FREE_SHIPPING">Free shipping</option>
               </Select>
               {draft.type !== 'FREE_SHIPPING' && (
-                <Input label={draft.type === 'PERCENT' ? 'Percent (%)' : 'Amount ($)'} inputMode="decimal" value={draft.value} onChange={(e) => setDraft({ ...draft, value: e.target.value })} error={errors.value} />
+                <Input label={draft.type === 'PERCENT' ? 'Percent (%)' : `Amount (${STORE_CURRENCY})`} inputMode="decimal" value={draft.value} onChange={(e) => setDraft({ ...draft, value: e.target.value })} error={errors.value} />
               )}
-              <Input label="Minimum order ($)" inputMode="decimal" value={draft.minSubtotal} onChange={(e) => setDraft({ ...draft, minSubtotal: e.target.value })} optional error={errors.minSubtotal} />
+              <Input label={`Minimum order (${STORE_CURRENCY})`} inputMode="decimal" value={draft.minSubtotal} onChange={(e) => setDraft({ ...draft, minSubtotal: e.target.value })} optional error={errors.minSubtotal} />
               <Input label="Total uses" inputMode="numeric" value={draft.maxUses} onChange={(e) => setDraft({ ...draft, maxUses: e.target.value.replace(/\D/g, '') })} optional hint="Empty = unlimited" />
               <Input label="Uses per customer" inputMode="numeric" value={draft.perUserLimit} onChange={(e) => setDraft({ ...draft, perUserLimit: e.target.value.replace(/\D/g, '') })} optional />
               <Input label="Starts" type="date" value={draft.startsAt} onChange={(e) => setDraft({ ...draft, startsAt: e.target.value })} optional />

@@ -7,11 +7,12 @@ import { useMemo, useRef, useState } from 'react';
 import { adminProductSchema } from '@maison/shared';
 import { api, ApiRequestError } from '@/lib/api';
 import { toCents, toDollars, useAdminQuery } from '@/lib/admin';
-import { cn } from '@/lib/utils';
+import { cn, STORE_CURRENCY } from '@/lib/utils';
 import { toast } from '@/stores/toast';
 import { Button } from '../ui/Button';
 import { Checkbox, FormError, Input, Select, zodFieldErrors } from '../ui/Field';
 import { ConfirmDialog, PageHeader, Panel, Pill, TextArea, Toggle } from './ui';
+import { useSite } from '../layout/SiteProvider';
 
 /* ───────────────────────── Types ───────────────────────── */
 
@@ -100,6 +101,7 @@ function fromProduct(p?: AdminProduct) {
 /* ───────────────────────── Editor ───────────────────────── */
 
 export function ProductEditor({ product }: { product?: AdminProduct }) {
+  const { storeName } = useSite();
   const router = useRouter();
   const isNew = !product;
   const [form, setForm] = useState(() => fromProduct(product));
@@ -282,7 +284,7 @@ export function ProductEditor({ product }: { product?: AdminProduct }) {
               <Input label="URL handle" value={form.slug} onChange={(e) => set('slug', e.target.value.toLowerCase())} hint="Generated from the name if empty." error={err('slug')} />
               <div className="border border-stone-200 bg-stone-100/50 p-4 text-sm">
                 <p className="text-xs text-stone-500">Preview</p>
-                <p className="mt-1 text-[#1a0dab]">{(form.seoTitle || form.name || 'Product name') + ' | Maison'}</p>
+                <p className="mt-1 text-[#1a0dab]">{(form.seoTitle || form.name || 'Product name') + ' | ' + storeName}</p>
                 <p className="text-xs text-[#006621]">maison.com/product/{form.slug || 'product-name'}</p>
                 <p className="mt-1 line-clamp-2 text-xs text-stone-600">{form.seoDescription || form.description || 'Product description…'}</p>
               </div>
@@ -301,9 +303,9 @@ export function ProductEditor({ product }: { product?: AdminProduct }) {
 
           <Panel title="Pricing">
             <div className="space-y-5">
-              <Input label="Price ($)" inputMode="decimal" value={form.basePrice} onChange={(e) => set('basePrice', e.target.value)} error={err('basePrice')} />
+              <Input label={`Price (${STORE_CURRENCY})`} inputMode="decimal" value={form.basePrice} onChange={(e) => set('basePrice', e.target.value)} error={err('basePrice')} />
               <Input
-                label="Compare-at price ($)"
+                label={`Compare-at price (${STORE_CURRENCY})`}
                 inputMode="decimal"
                 value={form.compareAtPrice}
                 onChange={(e) => set('compareAtPrice', e.target.value)}
@@ -678,7 +680,7 @@ function VariantsPanel({
               <tr className="border-b border-stone-200 text-left text-[0.65rem] tracking-[0.12em] text-stone-500 uppercase">
                 <th className="py-2 pr-2 font-medium">Variant</th>
                 <th className="py-2 pr-2 font-medium">SKU</th>
-                <th className="w-24 py-2 pr-2 font-medium">Price ($)</th>
+                <th className="w-24 py-2 pr-2 font-medium">Price ({STORE_CURRENCY})</th>
                 <th className="w-20 py-2 pr-2 font-medium">Stock</th>
                 <th className="w-20 py-2 pr-2 font-medium">Alert at</th>
                 <th className="w-16 py-2 pr-2 font-medium">Active</th>

@@ -3,11 +3,11 @@
 import { AnimatePresence, motion } from 'motion/react';
 import { Minus, Plus } from 'lucide-react';
 import Link from 'next/link';
-import { FREE_SHIPPING_THRESHOLD } from '@maison/shared';
 import type { CartItem } from '@/lib/types';
 import { cn, EASE, formatMoney } from '@/lib/utils';
 import { useCart } from '@/stores/cart';
 import { useUi } from '@/stores/ui';
+import { useSite } from '../layout/SiteProvider';
 import { ButtonLink } from '../ui/Button';
 import { Drawer } from '../ui/Drawer';
 import { Img } from '../ui/Img';
@@ -15,8 +15,9 @@ import { Img } from '../ui/Img';
 export function CartDrawer() {
   const { cartOpen, closeCart } = useUi();
   const { cart, loaded } = useCart();
-  const remaining = Math.max(0, FREE_SHIPPING_THRESHOLD - cart.subtotal);
-  const progress = Math.min(1, cart.subtotal / FREE_SHIPPING_THRESHOLD);
+  const threshold = useSite().freeShippingThreshold;
+  const remaining = threshold === null ? 0 : Math.max(0, threshold - cart.subtotal);
+  const progress = threshold ? Math.min(1, cart.subtotal / threshold) : 1;
 
   return (
     <Drawer
@@ -52,7 +53,7 @@ export function CartDrawer() {
         )
       }
     >
-      {cart.items.length > 0 && (
+      {cart.items.length > 0 && threshold !== null && (
         <div className="border-b border-stone-200 px-6 py-5">
           <p className="mb-3 text-xs text-stone-600">
             {remaining > 0 ? (

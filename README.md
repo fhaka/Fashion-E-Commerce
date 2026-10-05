@@ -1,7 +1,9 @@
 # Maison — Premium Fashion E‑Commerce
 
-A full-stack luxury clothing store: an editorial storefront, a complete checkout, customer
-accounts and an admin dashboard for running the shop.
+A full-stack, white-label fashion store: an editorial storefront, a complete checkout, customer
+accounts and an admin dashboard for running the shop. "Maison" is the demo brand: each client's
+shop gets its own name, logo, colours, currency, shipping and tax rules and pages from the admin,
+with no code changes (see [docs/CLIENT-SETUP.md](docs/CLIENT-SETUP.md)).
 
 **Stack:** Next.js 16 · React 19 · Tailwind CSS v4 · Motion · Express 5 · PostgreSQL 16 ·
 Prisma 6 · JWT auth · Stripe (with a built-in demo mode) · Cloudinary (or local disk)
@@ -41,6 +43,9 @@ Prisma 6 · JWT auth · Stripe (with a built-in demo mode) · Cloudinary (or loc
 - Products (variants, image upload and ordering, SEO fields, duplicate, bulk actions), inventory with stock history, categories, collections, sizes and colours.
 - Orders (status timeline, tracking numbers, refunds with optional restock), customers, reviews moderation, coupons, banners, newsletter export and contact messages.
 - Storefront pages update instantly after admin edits (on-demand revalidation).
+- **Store settings:** name, logo, brand colours (contrast-checked), contact details, social links, announcements, shipping prices, free-shipping threshold, tax rate (tax-inclusive or added at checkout), return window.
+- **Pages editor:** About, Shipping & returns, Privacy and Terms in simple Markdown with live preview and `{{placeholders}}` filled from settings.
+- Branded HTML emails (order confirmation, shipping, refunds, password reset, welcome, newsletter, contact).
 
 **Security**
 - bcrypt password hashing. Short-lived JWT access tokens are kept only in memory, while the refresh token sits in an `httpOnly` cookie and changes on every use (reuse is detected).
@@ -168,6 +173,7 @@ with the placeholder JWT secrets.
 | `CLOUDINARY_*` | optional | Enables Cloudinary; otherwise uploads go to `apps/api/uploads` |
 | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `EMAIL_FROM` | prod | Outgoing email via any SMTP provider; without `SMTP_HOST`, emails are printed to the API log |
 | `ORDER_RESERVATION_MINUTES` | optional | How long an unpaid order holds stock (default 30) |
+| `STORE_CURRENCY`, `STORE_LOCALE` | per shop | Shop currency (2-decimal ISO code, e.g. `EUR`) and number format (e.g. `fr-FR`); fixed once products exist |
 
 **Web: `apps/web/.env.local`**
 
@@ -177,6 +183,7 @@ with the placeholder JWT secrets.
 | `NEXT_PUBLIC_SITE_URL` | Canonical public URL (sitemap, Open Graph, canonical links) |
 | `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Only when Stripe is enabled |
 | `REVALIDATE_SECRET` | Must match the API's value |
+| `NEXT_PUBLIC_STORE_CURRENCY`, `NEXT_PUBLIC_STORE_LOCALE` | Must match the API's `STORE_CURRENCY` / `STORE_LOCALE` |
 
 ---
 
@@ -234,8 +241,8 @@ npm run db:up
 npm test
 ```
 
-There are 123 API integration tests, covering auth, the catalogue, cart, checkout and payments
-(including stock races), admin, account and demo mode. They run against a separate `maison_test` database
+There are 134 API integration tests, covering auth, the catalogue, cart, checkout and payments
+(including stock races), admin, account, store settings and pages, and demo mode. They run against a separate `maison_test` database
 (your `DATABASE_URL` name plus `_test`, or `TEST_DATABASE_URL`), which is migrated and re-seeded before every run. The
 setup refuses to touch any database whose name doesn't end in `_test`.
 
@@ -262,4 +269,5 @@ Step-by-step instructions and a go-live checklist are in [docs/DEPLOYMENT.md](do
 | [docs/API.md](docs/API.md) | REST API reference |
 | [docs/DATABASE.md](docs/DATABASE.md) | Migrations, seeding, backups |
 | [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) | Production deployment and go-live checklist |
+| [docs/CLIENT-SETUP.md](docs/CLIENT-SETUP.md) | Setting up the shop for a new client (branding, settings, pages, catalogue, handover) |
 | [docs/PLANS.md](docs/PLANS.md) | Basic / Advanced / Premium client packages |

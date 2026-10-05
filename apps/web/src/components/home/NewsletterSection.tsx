@@ -14,7 +14,7 @@ export function NewsletterSection({ image }: { image?: string }) {
         <div className="flex items-center px-(--spacing-gutter) py-20 lg:px-20 lg:py-28">
           <div className="max-w-md">
             <Reveal y={12}>
-              <p className="eyebrow mb-5 text-stone-600">The Maison letter</p>
+              <p className="eyebrow mb-5 text-stone-600">The newsletter</p>
             </Reveal>
             <SplitText id="newsletter-heading" text="First access, quietly delivered" className="font-display text-display-sm font-light" />
             <Reveal delay={0.2}>

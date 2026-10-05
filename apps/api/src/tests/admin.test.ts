@@ -193,9 +193,11 @@ describe('product management', () => {
     expect(await prisma.product.findUnique({ where: { id: fresh.id } })).toBeNull();
 
     const sold = await prisma.orderItem.findFirstOrThrow({ where: { productId: { not: null } } });
+    const before = await prisma.product.findUniqueOrThrow({ where: { id: sold.productId! }, select: { status: true } });
     expect((await A('delete', `/products/${sold.productId}`)).body.data).toEqual({ archived: true });
     expect((await prisma.product.findUniqueOrThrow({ where: { id: sold.productId! } })).status).toBe('ARCHIVED');
-    await prisma.product.update({ where: { id: sold.productId! }, data: { status: 'ACTIVE' } });
+    // Put it back exactly as it was (it may be a draft created by another test).
+    await prisma.product.update({ where: { id: sold.productId! }, data: { status: before.status } });
   });
 
   it('duplicates a product as a draft with zero stock', async () => {

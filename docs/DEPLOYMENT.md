@@ -45,6 +45,7 @@ nano .env.production
 
 Fill in at least:
 - `DOMAIN` (e.g. `shop.example.com`)
+- `STORE_CURRENCY` and `STORE_LOCALE` (e.g. `EUR` and `fr-FR`). These are permanent once products exist, because prices are stored in that currency.
 - `POSTGRES_PASSWORD`, `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET` and `REVALIDATE_SECRET`. Generate each one separately with
   `node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"` or
   `openssl rand -hex 48`.
@@ -81,6 +82,9 @@ curl https://shop.example.com/api/v1/health
 > The rest of this guide uses `dc`.
 
 ### 4. Create your admin account
+
+> Setting up a shop for a client? Follow [CLIENT-SETUP.md](CLIENT-SETUP.md) from here: it covers branding, settings, pages, catalogue and handover.
+
 
 For a **real launch**, create only your admin and add products through `/admin`:
 

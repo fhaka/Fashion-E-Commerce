@@ -36,7 +36,7 @@ the single source of truth used by both the API and the web forms.
 | 429 | `RATE_LIMITED` | Too many requests (see `RateLimit-*` headers) |
 | 500 | `INTERNAL_ERROR` / `DATABASE_ERROR` | Unexpected; logged server-side |
 
-**Money** is always integer **cents** (`39000` = $390.00). **IDs** are cuids. Dates are ISO 8601.
+**Money** is always integer **cents** of the shop currency (`STORE_CURRENCY`; `39000` = 390.00). **IDs** are cuids. Dates are ISO 8601.
 Pagination uses `?page=` (1-based) and `?limit=`; maximums are listed per endpoint.
 
 ---
@@ -64,7 +64,8 @@ Legend: 🔓 public · 👤 signed-in customer · 🔐 admin · ⏱ rate-limited
 |---|---|---|
 | GET | `/health` (outside `/api/v1`) | Process liveness (used by Docker health checks) |
 | GET | `/api/v1/health` | Liveness plus a database check |
-| GET | `/api/v1/site` | Public storefront configuration: `{ demo: null \| { resetHourUtc, nextResetAt, roles } }` |
+| GET | `/api/v1/site` | Public storefront configuration: `{ demo, settings }`. `settings` holds branding, contact, shipping options, tax rules, `theme` colours, `currency` and `locale`; `demo` is `null` outside demo mode |
+| GET | `/api/v1/pages/:slug` | Content page (`about`, `shipping-returns`, `privacy`, `terms`): `{ title, intro, body (Markdown), imageUrl, updatedAt }` |
 
 ## Auth: `/auth`
 
@@ -138,8 +139,8 @@ reset allow 20 failed attempts per 15 minutes per IP.
 
 | Method | Path | | Notes |
 |---|---|---|---|
-| GET | `/checkout/config` | 🔓 | Payment provider (`mock` or `stripe`), shipping methods, free-shipping threshold |
-| POST | `/checkout/quote` | 🔓 | `{ shippingMethod, couponCode?, items? }` → subtotal, discount, shipping, tax, total (re-priced server-side) |
+| GET | `/checkout/config` | 🔓 | Payment provider (`mock` or `stripe`), currency and the available shipping options (from store settings) |
+| POST | `/checkout/quote` | 🔓 | `{ shippingMethod, couponCode?, items? }` → subtotal, discount, shipping, tax, `taxIncluded`, total (re-priced server-side). `express` returns 422 when disabled in settings |
 | POST | `/checkout/coupon/validate` | 🔓⏱ | `{ code, subtotal, email? }` |
 | POST | `/checkout` | 🔓⏱ | Places the order (below); reserves stock, returns `{ orderNumber, total, payment: { provider, clientSecret } }` |
 | POST | `/checkout/:orderNumber/confirm-mock` | 🔓 | Demo mode only: `{ clientSecret, outcome: "success" \| "decline" }` |
@@ -212,6 +213,8 @@ affected cached pages.
 | Reviews | `GET /admin/reviews?q&status&rating` · `PATCH /admin/reviews/:id` `{ status }` · `DELETE /admin/reviews/:id` |
 | Newsletter | `GET /admin/newsletter?q&status&format=json\|csv` |
 | Messages | `GET /admin/messages` · `PATCH /admin/messages/:id` `{ isRead }` |
+| Store settings | `GET /admin/settings` · `PUT /admin/settings` (`storeSettingsSchema`: branding, contact, social links, announcements, shipping, tax, colours; colours must pass WCAG contrast). Read-only in demo mode |
+| Pages | `GET /admin/pages` · `GET/PUT /admin/pages/:slug` `{ title, intro?, body, imageUrl? }` · `POST /admin/pages/:slug/reset` (restore template). Read-only in demo mode |
 
 Request bodies for create/update are the `admin*Schema` definitions in
 `packages/shared/src/schemas.ts` (e.g. `adminProductSchema` with nested variants and images).

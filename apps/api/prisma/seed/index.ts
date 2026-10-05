@@ -4,6 +4,7 @@ import bcrypt from 'bcryptjs';
 import { Prisma, PrismaClient, type OrderStatus } from '@prisma/client';
 import { banners, categories, collections, colors, products, sizeGroups } from './catalog';
 import { brandImages, editorialImages, img } from './images';
+import { MAISON_PAGES, MAISON_SETTINGS } from './brand';
 
 const prisma = new PrismaClient();
 
@@ -280,6 +281,14 @@ async function main() {
     customers.push(u);
   }
   console.log(`   ✓ ${customers.length + 1} users (admin: ${adminEmail})`);
+
+  /* ── Store settings & content pages (the Maison demo brand) ── */
+  const settingsData = { ...MAISON_SETTINGS, socialLinks: MAISON_SETTINGS.socialLinks as Prisma.InputJsonValue, storyStats: MAISON_SETTINGS.storyStats as Prisma.InputJsonValue };
+  await prisma.storeSettings.upsert({ where: { id: 1 }, create: { id: 1, ...settingsData }, update: settingsData });
+  for (const [slug, page] of Object.entries(MAISON_PAGES)) {
+    await prisma.contentPage.upsert({ where: { slug }, create: { slug, ...page }, update: page });
+  }
+  console.log('   ✓ store settings and pages');
 
   /* ── Coupons ── */
   const day = 86_400_000;

@@ -20,7 +20,7 @@ const PLACEMENTS: { value: Placement; label: string; hint: string }[] = [
   { value: 'HERO', label: 'Hero slides', hint: 'Full-screen slideshow at the top of the home page.' },
   { value: 'PROMO', label: 'Campaign', hint: 'The full-width parallax campaign banner (first active one is shown).' },
   { value: 'EDITORIAL', label: 'Lookbook', hint: 'Editorial images in the home page lookbook grid.' },
-  { value: 'STORY', label: 'Brand story', hint: 'The dark "Our atelier" section (first active one is shown).' },
+  { value: 'STORY', label: 'Brand story', hint: 'The dark brand story section on the home page (first active one is shown).' },
 ];
 
 const blank = (placement: Placement) => ({ title: '', subtitle: '', eyebrow: '', ctaLabel: '', ctaHref: '', image: '', mobileImage: '', placement, theme: 'DARK' as 'DARK' | 'LIGHT', isActive: true, startsAt: '', endsAt: '' });

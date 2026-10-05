@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { apiFetch, ApiRequestError, getAccessToken, refreshAccessToken } from './api';
+import { STORE_CURRENCY, STORE_LOCALE } from './utils';
 
 type Query = Record<string, string | number | boolean | string[] | undefined | null>;
 
@@ -65,7 +66,7 @@ export const toDollars = (cents: number | null | undefined) => (cents === null |
 
 /** Compact money for dashboards: $1.2K, $56K, $1.4M. */
 export function compactMoney(cents: number) {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', notation: 'compact', maximumFractionDigits: 1 }).format(cents / 100);
+  return new Intl.NumberFormat(STORE_LOCALE, { style: 'currency', currency: STORE_CURRENCY, notation: 'compact', maximumFractionDigits: 1 }).format(cents / 100);
 }
 
 export function formatDate(d: string | Date, withTime = false) {

@@ -30,15 +30,20 @@ export type BannerPlacement = (typeof BANNER_PLACEMENTS)[number];
 export const PRODUCT_SORTS = ['newest', 'price_asc', 'price_desc', 'bestselling', 'rating'] as const;
 export type ProductSort = (typeof PRODUCT_SORTS)[number];
 
+/** Shipping methods. Prices, delivery times and the free-shipping threshold live in store settings. */
 export const SHIPPING_METHODS = {
-  standard: { label: 'Standard', description: '3–5 business days', price: 1200 },
-  express: { label: 'Express', description: '1–2 business days', price: 2500 },
+  standard: { label: 'Standard' },
+  express: { label: 'Express' },
 } as const;
 export type ShippingMethod = keyof typeof SHIPPING_METHODS;
 
-/** Orders at or above this subtotal (cents) ship free with the standard method. */
-export const FREE_SHIPPING_THRESHOLD = 25000;
-/** Flat demo tax rate applied to (subtotal - discount). Replace with a tax provider in production. */
-export const TAX_RATE = 0.08;
+/** Fallback currency; each deployment sets its own (STORE_CURRENCY / NEXT_PUBLIC_STORE_CURRENCY). */
+export const DEFAULT_CURRENCY = 'USD';
+export const DEFAULT_LOCALE = 'en-US';
 
-export const CURRENCY = 'USD';
+export const SOCIAL_NETWORKS = ['instagram', 'facebook', 'pinterest', 'tiktok', 'x', 'youtube'] as const;
+export type SocialNetwork = (typeof SOCIAL_NETWORKS)[number];
+
+/** Editable content pages (Admin → Pages). */
+export const CONTENT_PAGES = ['about', 'shipping-returns', 'privacy', 'terms'] as const;
+export type ContentPageSlug = (typeof CONTENT_PAGES)[number];

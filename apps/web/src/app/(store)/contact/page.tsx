@@ -1,36 +1,47 @@
 import type { Metadata } from 'next';
 import { ContactForm } from '@/components/ui/ContactForm';
 import { PageIntro } from '@/components/ui/PageIntro';
+import { getSiteSettings } from '@/lib/site';
 
-export const metadata: Metadata = {
-  title: 'Client services',
-  description: 'Contact Maison client services for sizing advice, orders, returns and repairs. We reply within one business day.',
-  alternates: { canonical: '/contact' },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const s = await getSiteSettings();
+  return {
+    title: 'Contact us',
+    description: `Contact ${s.storeName} for sizing advice, orders and returns.`,
+    alternates: { canonical: '/contact' },
+  };
+}
 
-const DETAILS = [
-  { title: 'Email', lines: ['clientservices@maison.example', 'Replies within one business day'] },
-  { title: 'Telephone', lines: ['+33 1 00 00 00 00', 'Monday – Saturday, 9am – 7pm CET'] },
-  { title: 'Atelier', lines: ['12 Rue de Turenne', '75004 Paris, France', 'Appointments only'] },
-];
-
-export default function ContactPage() {
+export default async function ContactPage() {
+  const s = await getSiteSettings();
+  // Contact details come from Admin → Settings; empty fields are simply not shown.
+  const details = [
+    { title: 'Email', lines: [s.supportEmail], href: `mailto:${s.supportEmail}` },
+    ...(s.phone ? [{ title: 'Telephone', lines: [s.phone, ...(s.openingHours ? [s.openingHours] : [])], href: `tel:${s.phone.replace(/[^+\d]/g, '')}` }] : []),
+    ...(s.address ? [{ title: 'Address', lines: s.address.split('\n').filter(Boolean), href: undefined }] : []),
+  ];
   return (
     <>
-      <PageIntro eyebrow="We are here to help" title="Client services" description="Sizing advice, order questions, returns and repairs — our advisors are happy to help." breadcrumbs={[{ name: 'Contact' }]} />
+      <PageIntro eyebrow="We are here to help" title="Contact us" description="Sizing advice, order questions and returns — we are happy to help." breadcrumbs={[{ name: 'Contact' }]} />
       <div className="container-site grid gap-16 pb-(--spacing-section) lg:grid-cols-12">
         <div className="lg:col-span-7">
           <ContactForm />
         </div>
         <aside className="space-y-10 lg:col-span-4 lg:col-start-9">
-          {DETAILS.map((d) => (
+          {details.map((d) => (
             <div key={d.title}>
               <h2 className="eyebrow mb-3 text-stone-500">{d.title}</h2>
-              {d.lines.map((l, i) => (
-                <p key={l} className={i === 0 ? 'text-lg' : 'text-sm text-stone-600'}>
-                  {l}
-                </p>
-              ))}
+              {d.lines.map((l, i) =>
+                i === 0 && d.href ? (
+                  <a key={l} href={d.href} className="link-underline text-lg">
+                    {l}
+                  </a>
+                ) : (
+                  <p key={l} className={i === 0 ? 'text-lg' : 'text-sm text-stone-600'}>
+                    {l}
+                  </p>
+                ),
+              )}
             </div>
           ))}
         </aside>

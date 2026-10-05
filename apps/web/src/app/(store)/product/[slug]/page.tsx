@@ -8,7 +8,8 @@ import { Reviews } from '@/components/product/Reviews';
 import { ApiRequestError, api } from '@/lib/api';
 import { getProduct } from '@/lib/catalog';
 import type { ProductCard } from '@/lib/types';
-import { SITE_NAME, SITE_URL } from '@/lib/utils';
+import { getSiteSettings } from '@/lib/site';
+import { SITE_URL, STORE_CURRENCY } from '@/lib/utils';
 
 export const revalidate = 60;
 
@@ -29,7 +30,7 @@ async function load(slug: string) {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const p = await load((await params).slug);
+  const [p, settings] = await Promise.all([load((await params).slug), getSiteSettings()]);
   const image = p.images[0];
   return {
     title: p.name,
@@ -37,7 +38,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     alternates: { canonical: `/product/${p.slug}` },
     openGraph: {
       type: 'website',
-      title: `${p.name} | ${SITE_NAME}`,
+      title: `${p.name} | ${settings.storeName}`,
       description: p.seoDescription,
       url: `/product/${p.slug}`,
       images: image ? [{ url: image.url.replace(/w=\d+/, 'w=1200'), width: 1200, alt: image.alt }] : undefined,
@@ -50,6 +51,7 @@ export default async function ProductPage({ params }: Props) {
   const { slug } = await params;
   const product = await load(slug);
   const related = await api<ProductCard[]>(`/products/${slug}/related`, { revalidate: 300 }).catch(() => [] as ProductCard[]);
+  const settings = await getSiteSettings();
 
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -58,11 +60,11 @@ export default async function ProductPage({ params }: Props) {
     description: product.description,
     image: product.images.slice(0, 6).map((i) => i.url),
     sku: product.variants[0]?.sku,
-    brand: { '@type': 'Brand', name: SITE_NAME },
+    brand: { '@type': 'Brand', name: settings.storeName },
     category: product.category.name,
     offers: {
       '@type': 'AggregateOffer',
-      priceCurrency: 'USD',
+      priceCurrency: STORE_CURRENCY,
       lowPrice: (Math.min(...product.variants.map((v) => v.price)) / 100).toFixed(2),
       highPrice: (Math.max(...product.variants.map((v) => v.price)) / 100).toFixed(2),
       offerCount: product.variants.length,

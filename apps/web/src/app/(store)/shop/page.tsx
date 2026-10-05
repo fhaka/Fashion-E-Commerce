@@ -8,7 +8,7 @@ type Props = { searchParams: Promise<SearchParams> };
 
 function heading(s: ListingState) {
   if (s.onSale) return { eyebrow: 'Selected pieces, reduced', title: 'The Sale', description: 'Past-season favourites at reduced prices. Limited quantities — when they are gone, they are gone.' };
-  if (s.isNew) return { eyebrow: 'Just landed', title: 'New Arrivals', description: 'The latest pieces from our atelier, arriving weekly through the season.' };
+  if (s.isNew) return { eyebrow: 'Just landed', title: 'New Arrivals', description: 'The latest pieces, arriving weekly through the season.' };
   if (s.bestSeller) return { eyebrow: 'Most loved', title: 'Best Sellers', description: 'The pieces our clients return to, season after season.' };
   return { eyebrow: 'The full wardrobe', title: 'Shop All', description: 'Outerwear, tailoring, knitwear and leather goods — considered pieces made from the finest natural fibres.' };
 }

@@ -11,7 +11,7 @@ export const revalidate = 300;
 
 export const metadata: Metadata = {
   title: 'Collections',
-  description: 'Explore Maison collections — seasonal stories, wardrobe essentials and atelier tailoring.',
+  description: 'Explore our collections — seasonal stories and wardrobe essentials.',
   alternates: { canonical: '/collections' },
 };
 

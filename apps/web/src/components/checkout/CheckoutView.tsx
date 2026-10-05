@@ -5,7 +5,7 @@ import { ChevronDown, Lock, Tag, X } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { checkoutSchema, SHIPPING_METHODS, type ShippingMethod } from '@maison/shared';
+import { checkoutSchema, type ShippingMethod } from '@maison/shared';
 import { api, ApiRequestError } from '@/lib/api';
 import type { Address } from '@/lib/types';
 import { cn, EASE, formatMoney } from '@/lib/utils';
@@ -17,7 +17,7 @@ import { Checkbox, FormError, Input, zodFieldErrors } from '../ui/Field';
 import { Img } from '../ui/Img';
 import { DemoCardForm, EMPTY_CARD, demoOutcome, validateCard, type CardValues } from './DemoCardForm';
 import { StripePayment } from './StripePayment';
-import { useDemo } from '../demo/Demo';
+import { useDemo, useSite } from '../layout/SiteProvider';
 
 interface QuoteLine {
   variantId: string;
@@ -37,6 +37,7 @@ interface Quote {
   discountTotal: number;
   shippingTotal: number;
   taxTotal: number;
+  taxIncluded: boolean;
   total: number;
   amountToFreeShipping: number;
 }
@@ -76,6 +77,7 @@ export function CheckoutView() {
   const { user, status } = useAuth();
   const { cart, loaded: cartLoaded, fetch: refetchCart } = useCart();
   const demo = useDemo();
+  const site = useSite();
 
   // "Buy now" checks out a single variant without touching the bag.
   const buyVariant = params.get('buy');
@@ -408,16 +410,16 @@ export function CheckoutView() {
 
           <Step n={3} title="Delivery method">
             <div className="space-y-3" role="radiogroup" aria-label="Delivery method">
-              {(Object.keys(SHIPPING_METHODS) as ShippingMethod[]).map((m) => {
-                const info = SHIPPING_METHODS[m];
-                const free = m === 'standard' && quote && quote.amountToFreeShipping === 0;
+              {site.shippingMethods.map((info) => {
+                const m = info.id;
+                const free = m === 'standard' && info.freeOver !== null && quote && quote.amountToFreeShipping === 0;
                 const freeByCoupon = quote?.coupon?.type === 'FREE_SHIPPING';
                 return (
                   <label key={m} className={cn('flex cursor-pointer items-center gap-4 border p-4 transition-colors', method === m ? 'border-ink ring-1 ring-ink' : 'border-stone-300 hover:border-stone-500', locked && 'pointer-events-none opacity-60')}>
                     <input type="radio" name="method" value={m} checked={method === m} onChange={() => setMethod(m)} className="h-4 w-4 accent-ink" disabled={locked} />
                     <span className="flex-1">
                       <span className="block text-sm">{info.label}</span>
-                      <span className="block text-xs text-stone-500">{info.description}</span>
+                      <span className="block text-xs text-stone-500">{info.eta}</span>
                     </span>
                     <span className="text-sm tabular-nums">{free || freeByCoupon ? 'Complimentary' : formatMoney(info.price)}</span>
                   </label>
@@ -592,10 +594,12 @@ function OrderSummary({
           <dt className="text-stone-600">Shipping</dt>
           <dd className="tabular-nums">{quote.shippingTotal === 0 ? 'Complimentary' : formatMoney(quote.shippingTotal)}</dd>
         </div>
-        <div className="flex justify-between">
-          <dt className="text-stone-600">Tax</dt>
-          <dd className="tabular-nums">{formatMoney(quote.taxTotal)}</dd>
-        </div>
+        {quote.taxTotal > 0 && (
+          <div className="flex justify-between">
+            <dt className="text-stone-600">{quote.taxIncluded ? 'Includes tax' : 'Tax'}</dt>
+            <dd className="tabular-nums">{formatMoney(quote.taxTotal)}</dd>
+          </div>
+        )}
         <div className="flex items-baseline justify-between border-t border-stone-300 pt-4">
           <dt>Total</dt>
           <dd className="font-display text-3xl tabular-nums">{formatMoney(quote.total)}</dd>

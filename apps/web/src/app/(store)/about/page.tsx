@@ -1,94 +1,113 @@
 import type { Metadata } from 'next';
+import { Blocks, fillText, renderableMarkdown } from '@/components/content/Markdown';
 import { ImageReveal, Reveal, SplitText, Stagger, StaggerItem } from '@/components/motion';
 import { ButtonLink } from '@/components/ui/Button';
-import { Img } from '@/components/ui/Img';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
+import { Img } from '@/components/ui/Img';
+import { getCollections } from '@/lib/catalog';
+import { asPillars } from '@/lib/markdown';
+import { getContentPage, getSiteSettings } from '@/lib/site';
+import { cn } from '@/lib/utils';
 
-export const metadata: Metadata = {
-  title: 'Our story',
-  description: 'Maison was founded in Paris in 2009 to make fewer, better clothes — cut by hand, made by family-run mills, and built to be worn for decades.',
-  alternates: { canonical: '/about' },
-};
+/*
+ * Edited in Admin → Pages → About. Layout rules:
+ *  - title, intro and image make the hero;
+ *  - a "## Section" written as a list of "**Title** — text" items becomes the numbered pillars band;
+ *  - any other "## Section" is a text section.
+ */
 
-const img = (id: string, w = 1600) => `https://images.unsplash.com/${id}?auto=format&fit=crop&w=${w}&q=80`;
+export async function generateMetadata(): Promise<Metadata> {
+  const [page, settings] = await Promise.all([getContentPage('about'), getSiteSettings()]);
+  return {
+    title: 'Our story',
+    description: page.intro ? fillText(page.intro, settings).slice(0, 160) : `The story behind ${settings.storeName}.`,
+    alternates: { canonical: '/about' },
+  };
+}
 
-const PRINCIPLES = [
-  { title: 'Fewer, better pieces', body: 'Two collections a year, never more. Each piece is developed over months of fittings until the proportion is right.' },
-  { title: 'Natural fibres only', body: 'Wool, cashmere, silk, linen, cotton and vegetable-tanned leather. Materials that breathe, age well and can be repaired.' },
-  { title: 'Made by people we know', body: 'Fourteen family-run mills and workshops in Italy, Scotland, Portugal and France — most of them partners for over a decade.' },
-  { title: 'Built to last', body: 'Hand-finished seams, half-canvassed tailoring and Goodyear-welted shoes. Every outerwear piece comes with lifetime repairs.' },
-];
+export default async function AboutPage() {
+  const [page, settings, collections] = await Promise.all([getContentPage('about'), getSiteSettings(), getCollections().catch(() => [])]);
+  const { lead, sections } = renderableMarkdown(page.body, settings);
+  const featured = collections.slice(0, 2);
 
-export default function AboutPage() {
   return (
     <>
       <div className="container-site pt-10">
         <Breadcrumbs items={[{ name: 'Our story' }]} />
       </div>
-      <section className="container-site grid items-end gap-12 py-16 lg:grid-cols-12 lg:py-24">
-        <div className="lg:col-span-6">
+      <section className={cn('container-site grid items-end gap-12 py-16 lg:py-24', page.imageUrl && 'lg:grid-cols-12')}>
+        <div className={page.imageUrl ? 'lg:col-span-6' : 'max-w-3xl'}>
           <Reveal y={10}>
-            <p className="eyebrow mb-6 text-camel-dark">The house · Est. 2009</p>
+            <p className="eyebrow mb-6 text-camel-dark">Our story</p>
           </Reveal>
-          <SplitText as="h1" inView={false} text="Made slowly, worn for years" className="font-display text-display font-light" />
-          <Reveal delay={0.3}>
-            <p className="mt-8 max-w-lg text-lg leading-relaxed text-stone-600">
-              Maison began in a small Paris atelier with a simple conviction: that the most luxurious thing a garment can be is lasting. We design fewer pieces, make them with
-              more care, and stand behind them for as long as you wear them.
-            </p>
-          </Reveal>
+          <SplitText as="h1" inView={false} text={fillText(page.title, settings)} className="font-display text-display font-light" />
+          {page.intro && (
+            <Reveal delay={0.3}>
+              <p className="mt-8 max-w-lg text-lg leading-relaxed text-stone-600">{fillText(page.intro, settings)}</p>
+            </Reveal>
+          )}
+          {lead.length > 0 && (
+            <Reveal delay={0.4} className="mt-6 max-w-lg">
+              <Blocks blocks={lead} settings={settings} />
+            </Reveal>
+          )}
         </div>
-        <ImageReveal className="aspect-[4/5] bg-stone-200 lg:col-span-5 lg:col-start-8">
-          <Img src={img('photo-1787505136296-1e8f0750e5ff')} alt="Adjusting a dress on a mannequin in the Maison atelier" fill priority sizes="(min-width: 1024px) 40vw, 100vw" className="object-cover" />
-        </ImageReveal>
+        {page.imageUrl && (
+          <ImageReveal className="aspect-[4/5] bg-stone-200 lg:col-span-5 lg:col-start-8">
+            <Img src={page.imageUrl} alt="" fill priority sizes="(min-width: 1024px) 40vw, 100vw" className="object-cover" />
+          </ImageReveal>
+        )}
       </section>
 
-      <section className="bg-ink py-(--spacing-section) text-bone">
-        <div className="container-site">
-          <Reveal>
-            <p className="eyebrow mb-12 text-bone/50">What we believe</p>
-          </Reveal>
-          <Stagger className="grid gap-12 sm:grid-cols-2 lg:grid-cols-4">
-            {PRINCIPLES.map((p, i) => (
-              <StaggerItem key={p.title}>
-                <p className="mb-4 font-display text-5xl font-light text-camel">0{i + 1}</p>
-                <h2 className="mb-3 font-display text-2xl">{p.title}</h2>
-                <p className="text-sm leading-relaxed text-bone/70">{p.body}</p>
-              </StaggerItem>
-            ))}
-          </Stagger>
-        </div>
-      </section>
+      {sections.map((section) => {
+        const pillars = asPillars(section);
+        return pillars ? (
+          <section key={section.id} className="bg-ink py-(--spacing-section) text-bone" aria-labelledby={section.id}>
+            <div className="container-site">
+              <Reveal>
+                <h2 id={section.id} className="eyebrow mb-12 text-bone/60">
+                  {section.title}
+                </h2>
+              </Reveal>
+              <Stagger className={cn('grid gap-12 sm:grid-cols-2', pillars.length >= 4 ? 'lg:grid-cols-4' : 'lg:grid-cols-3')}>
+                {pillars.map((p, i) => (
+                  <StaggerItem key={p.title}>
+                    <p className="mb-4 font-display text-5xl font-light text-camel" aria-hidden>
+                      {String(i + 1).padStart(2, '0')}
+                    </p>
+                    <h3 className="mb-3 font-display text-2xl">{p.title}</h3>
+                    <p className="text-sm leading-relaxed text-bone/70">{p.body}</p>
+                  </StaggerItem>
+                ))}
+              </Stagger>
+            </div>
+          </section>
+        ) : (
+          <section key={section.id} className="container-site grid gap-10 py-(--spacing-section) lg:grid-cols-12" aria-labelledby={section.id}>
+            <div className="lg:col-span-4">
+              <SplitText id={section.id} text={section.title} className="font-display text-display-sm font-light" />
+            </div>
+            <Reveal delay={0.15} className="max-w-2xl lg:col-span-7 lg:col-start-6">
+              <Blocks blocks={section.blocks} settings={settings} />
+            </Reveal>
+          </section>
+        );
+      })}
 
-      <section className="container-site grid items-center gap-12 py-(--spacing-section) lg:grid-cols-12">
-        <ImageReveal className="aspect-[4/3] bg-stone-200 lg:col-span-6">
-          <Img src={img('photo-1770910195240-ddec777b77f6')} alt="Mannequins and sewing supplies in a clothing workshop" fill sizes="(min-width: 1024px) 50vw, 100vw" className="object-cover" />
-        </ImageReveal>
-        <div className="lg:col-span-5 lg:col-start-8">
-          <SplitText text="From pattern to piece" className="font-display text-display-sm font-light" />
-          <Reveal delay={0.2}>
-            <p className="mt-6 leading-relaxed text-stone-600">
-              Every pattern is drafted by hand in our atelier on Rue de Turenne. Prototypes are cut, fitted and re-cut — often a dozen times — before a piece enters production.
-              Our mills weave cloth to our specification, and our workshops finish each garment by hand: buttonholes, seams and edges you will notice every time you wear it.
-            </p>
-            <p className="mt-4 leading-relaxed text-stone-600">
-              When something needs care, send it back to us. We repair outerwear for life and offer resoling on all our footwear.
-            </p>
-          </Reveal>
-        </div>
-      </section>
-
-      <section className="bg-sand py-(--spacing-section)">
-        <div className="container-site text-center">
-          <SplitText text="Discover the collection" className="font-display text-display-sm font-light" />
-          <Reveal delay={0.2} className="mt-10 flex flex-wrap justify-center gap-3">
-            <ButtonLink href="/collections/autumn-winter-26">Autumn / Winter 26</ButtonLink>
-            <ButtonLink href="/collections/the-essentials" variant="outline">
-              The Essentials
-            </ButtonLink>
-          </Reveal>
-        </div>
-      </section>
+      {featured.length > 0 && (
+        <section className="bg-sand py-(--spacing-section)">
+          <div className="container-site text-center">
+            <SplitText text="Discover the collection" className="font-display text-display-sm font-light" />
+            <Reveal delay={0.2} className="mt-10 flex flex-wrap justify-center gap-3">
+              {featured.map((c, i) => (
+                <ButtonLink key={c.id} href={`/collections/${c.slug}`} variant={i === 0 ? 'primary' : 'outline'}>
+                  {c.name}
+                </ButtonLink>
+              ))}
+            </Reveal>
+          </div>
+        </section>
+      )}
     </>
   );
 }

@@ -407,6 +407,8 @@ model Order {
   discountTotal   Int         @default(0)
   shippingTotal   Int         @default(0)
   taxTotal        Int         @default(0)
+  /// True when taxTotal was already included in the item prices (e.g. EU VAT).
+  taxIncluded     Boolean     @default(false)
   total           Int
   shippingMethod  String
   /// Snapshots so historical orders never change when a user edits an address.
@@ -593,4 +595,52 @@ model ContactMessage {
   message   String
   isRead    Boolean  @default(false)
   createdAt DateTime @default(now())
+}
+
+/// Store-wide settings edited in Admin → Settings. Exactly one row (id = 1).
+model StoreSettings {
+  id                    Int      @id @default(1)
+  storeName             String
+  legalName             String?
+  tagline               String
+  description           String
+  logoUrl               String?
+  supportEmail          String
+  phone                 String?
+  address               String?
+  openingHours          String?
+  /// { instagram, facebook, pinterest, tiktok, x, youtube } → URL
+  socialLinks           Json     @default("{}")
+  /// Messages rotating in the header announcement bar.
+  announcements         String[]
+  /// Short brand promises scrolling on the home page.
+  highlights            String[]
+  /// Up to three { value, label } figures in the home page brand story.
+  storyStats            Json     @default("[]")
+  shippingStandardPrice Int
+  shippingStandardEta   String
+  shippingExpressPrice  Int
+  shippingExpressEta    String
+  expressEnabled        Boolean  @default(true)
+  /// Standard shipping is free at or above this subtotal (cents). Null = never free.
+  freeShippingThreshold Int?
+  /// Tax rate in basis points (800 = 8%).
+  taxRate               Int      @default(0)
+  /// True when catalogue prices already include tax (common for EU VAT).
+  pricesIncludeTax      Boolean  @default(false)
+  returnDays            Int      @default(30)
+  themeInk              String   @default("#0e0e0e")
+  themeBone             String   @default("#f5f2ed")
+  themeAccent           String   @default("#b08d57")
+  updatedAt             DateTime @updatedAt
+}
+
+/// Editable content pages (About, Shipping & returns, Privacy, Terms). Body is Markdown.
+model ContentPage {
+  slug      String   @id
+  title     String
+  intro     String?
+  body      String
+  imageUrl  String?
+  updatedAt DateTime @updatedAt
 }

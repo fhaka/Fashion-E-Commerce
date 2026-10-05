@@ -2,9 +2,9 @@
 
 import { AnimatePresence, motion } from 'motion/react';
 import { Lock, RotateCcw, Truck } from 'lucide-react';
-import { FREE_SHIPPING_THRESHOLD, TAX_RATE } from '@maison/shared';
 import { cn, EASE, formatMoney } from '@/lib/utils';
 import { useCart } from '@/stores/cart';
+import { useSite } from '../layout/SiteProvider';
 import { RecentlyViewed } from '../product/RecentlyViewed';
 import { ButtonLink } from '../ui/Button';
 import { PageIntro } from '../ui/PageIntro';
@@ -12,9 +12,14 @@ import { CartLine } from './CartDrawer';
 
 export function CartPageView() {
   const { cart, loaded } = useCart();
-  const remaining = Math.max(0, FREE_SHIPPING_THRESHOLD - cart.subtotal);
-  const shipping = remaining === 0 ? 0 : 1200;
-  const estTax = Math.round(cart.subtotal * TAX_RATE);
+  const site = useSite();
+  const threshold = site.freeShippingThreshold;
+  const remaining = threshold === null ? Infinity : Math.max(0, threshold - cart.subtotal);
+  const shipping = remaining === 0 ? 0 : site.shippingStandardPrice;
+  // Estimate only: the exact amount (after discounts) is calculated at checkout.
+  const rate = site.taxRate / 10_000;
+  const estTax = site.pricesIncludeTax ? Math.round(cart.subtotal - cart.subtotal / (1 + rate)) : Math.round(cart.subtotal * rate);
+  const estTotal = cart.subtotal + shipping + (site.pricesIncludeTax ? 0 : estTax);
 
   return (
     <>
@@ -69,24 +74,28 @@ export function CartPageView() {
                       <dt className="text-stone-600">Standard shipping</dt>
                       <dd className="tabular-nums">{shipping === 0 ? 'Complimentary' : formatMoney(shipping)}</dd>
                     </div>
-                    <div className="flex justify-between">
-                      <dt className="text-stone-600">Estimated tax</dt>
-                      <dd className="tabular-nums">{formatMoney(estTax)}</dd>
-                    </div>
+                    {site.taxRate > 0 && (
+                      <div className="flex justify-between">
+                        <dt className="text-stone-600">{site.pricesIncludeTax ? 'Includes tax' : 'Estimated tax'}</dt>
+                        <dd className="tabular-nums">{formatMoney(estTax)}</dd>
+                      </div>
+                    )}
                     <div className="flex justify-between border-t border-stone-300 pt-4 text-base">
                       <dt>Estimated total</dt>
-                      <dd className="font-display text-2xl tabular-nums">{formatMoney(cart.subtotal + shipping + estTax)}</dd>
+                      <dd className="font-display text-2xl tabular-nums">{formatMoney(estTotal)}</dd>
                     </div>
                   </dl>
 
-                  <div className="mt-6">
-                    <p className="mb-2 text-xs text-stone-600">
-                      {remaining > 0 ? `Add ${formatMoney(remaining)} for complimentary shipping` : 'Complimentary shipping unlocked'}
-                    </p>
-                    <div className="h-[2px] bg-stone-300">
-                      <motion.div className="h-full bg-ink" initial={{ width: 0 }} animate={{ width: `${Math.min(100, (cart.subtotal / FREE_SHIPPING_THRESHOLD) * 100)}%` }} transition={{ duration: 0.9, ease: EASE }} />
+                  {threshold !== null && (
+                    <div className="mt-6">
+                      <p className="mb-2 text-xs text-stone-600">
+                        {remaining > 0 ? `Add ${formatMoney(remaining)} for complimentary shipping` : 'Complimentary shipping unlocked'}
+                      </p>
+                      <div className="h-[2px] bg-stone-300">
+                        <motion.div className="h-full bg-ink" initial={{ width: 0 }} animate={{ width: `${Math.min(100, (cart.subtotal / Math.max(threshold, 1)) * 100)}%` }} transition={{ duration: 0.9, ease: EASE }} />
+                      </div>
                     </div>
-                  </div>
+                  )}
 
                   {cart.hasIssues && (
                     <p className="mt-6 bg-sale/10 px-3 py-2 text-xs text-sale" role="alert">
@@ -106,11 +115,13 @@ export function CartPageView() {
                 </div>
                 <ul className="mt-6 space-y-3 text-xs text-stone-600">
                   <li className="flex items-center gap-3">
-                    <Truck className="h-4 w-4" strokeWidth={1.3} /> Ships in 1–2 business days
+                    <Truck className="h-4 w-4" strokeWidth={1.3} /> Standard delivery in {site.shippingStandardEta}
                   </li>
-                  <li className="flex items-center gap-3">
-                    <RotateCcw className="h-4 w-4" strokeWidth={1.3} /> Free returns within 30 days
-                  </li>
+                  {site.returnDays > 0 && (
+                    <li className="flex items-center gap-3">
+                      <RotateCcw className="h-4 w-4" strokeWidth={1.3} /> Returns within {site.returnDays} days
+                    </li>
+                  )}
                 </ul>
               </div>
             </aside>

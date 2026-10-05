@@ -1,7 +1,7 @@
 import crypto from 'node:crypto';
 import { env } from '../config/env';
 import { prisma } from '../db/prisma';
-import { sendEmail } from '../providers/email';
+import { sendBrandedEmail } from '../providers/email/branded';
 import { ApiError } from '../utils/ApiError';
 import { sanitizeText } from '../utils/helpers';
 
@@ -19,11 +19,13 @@ export async function subscribe(email: string, source?: string) {
     create: { email, source: source ?? 'footer' },
     update: { status: 'SUBSCRIBED', unsubscribedAt: null },
   });
-  void sendEmail({
-    to: email,
+  void sendBrandedEmail(email, (s) => ({
     subject: 'You are on the list',
-    text: `Thank you for joining Maison. Expect early access to new collections and private events.\n\nUnsubscribe at any time: ${env.WEB_URL}/newsletter/unsubscribe?email=${encodeURIComponent(email)}&token=${unsubscribeToken(email)}`,
-  });
+    heading: 'Thank you for subscribing',
+    paragraphs: [`You'll be the first to hear about new arrivals, private sales and stories from ${s.storeName}.`],
+    button: { label: 'Visit the shop', url: `${env.WEB_URL}/shop` },
+    footerLink: { label: 'Unsubscribe', url: `${env.WEB_URL}/newsletter/unsubscribe?email=${encodeURIComponent(email)}&token=${unsubscribeToken(email)}` },
+  }));
   return { alreadySubscribed: false };
 }
 
@@ -47,9 +49,9 @@ export async function createContactMessage(input: { name: string; email: string;
       message: sanitizeText(input.message),
     },
   });
-  void sendEmail({
-    to: input.email,
+  void sendBrandedEmail(input.email, (s) => ({
     subject: 'We have received your message',
-    text: `Dear ${input.name},\n\nThank you for contacting Maison client services. We reply to every message within one business day.`,
-  });
+    heading: 'Thank you for getting in touch',
+    paragraphs: [`Dear ${input.name},`, `Thank you for contacting ${s.storeName}. We reply to every message as soon as possible, usually within one business day.`],
+  }));
 }

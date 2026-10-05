@@ -113,7 +113,7 @@ function Messages() {
                     From {m.name} &lt;{m.email}&gt;
                   </p>
                   <p className="whitespace-pre-line text-stone-800">{m.message}</p>
-                  <a href={`mailto:${m.email}?subject=${encodeURIComponent(`Re: ${m.subject ?? 'Your message to Maison'}`)}`} className="link-underline mt-4 inline-block text-xs">
+                  <a href={`mailto:${m.email}?subject=${encodeURIComponent(`Re: ${m.subject ?? 'Your message'}`)}`} className="link-underline mt-4 inline-block text-xs">
                     Reply by email
                   </a>
                 </div>

@@ -7,7 +7,8 @@ import { SectionHeading } from '@/components/home/SectionHeading';
 import { Marquee, Stagger, StaggerItem } from '@/components/motion';
 import { ProductCard } from '@/components/product/ProductCard';
 import { getBanners, getCategoryTree, getCollections, getProduct, getProducts } from '@/lib/catalog';
-import { SITE_NAME, SITE_URL } from '@/lib/utils';
+import { getSiteSettings } from '@/lib/site';
+import { SITE_URL } from '@/lib/utils';
 
 export const revalidate = 60;
 
@@ -23,15 +24,17 @@ export default async function HomePage() {
     getProducts({ bestSeller: true, sort: 'bestselling', limit: 8 }),
     getProducts({ featured: true, sort: 'bestselling', limit: 1 }),
   ]);
+  const settings = await getSiteSettings();
   const spotlight = featured.data[0] ? await getProduct(featured.data[0].slug).catch(() => null) : null;
 
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Organization',
-    name: SITE_NAME,
+    name: settings.storeName,
     url: SITE_URL,
-    logo: `${SITE_URL}/icon.svg`,
-    sameAs: ['https://instagram.com', 'https://pinterest.com'],
+    logo: settings.logoUrl ?? `${SITE_URL}/icon.svg`,
+    email: settings.supportEmail,
+    sameAs: Object.values(settings.socialLinks).filter(Boolean),
   };
 
   return (
@@ -42,7 +45,7 @@ export default async function HomePage() {
       <Hero slides={heroes} />
 
       <div id="home-content" className="border-b border-stone-200 py-5 text-[0.7rem] tracking-[0.2em] text-stone-600 uppercase">
-        <Marquee items={['Complimentary shipping over $250', 'Free 30-day returns', 'Made in Europe', 'Natural fibres only', 'Lifetime repairs on outerwear']} />
+        {settings.highlights.length > 0 && <Marquee items={settings.highlights} />}
       </div>
 
       {/* 2. Featured collections */}
@@ -76,7 +79,7 @@ export default async function HomePage() {
       {spotlight && <FeaturedProduct product={spotlight} />}
 
       {/* 8. Brand story */}
-      <BrandStory story={stories[0]} />
+      <BrandStory story={stories[0]} stats={settings.storyStats} />
 
       {/* 9. Lookbook */}
       <Lookbook looks={looks} />

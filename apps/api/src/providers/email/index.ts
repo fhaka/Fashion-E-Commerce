@@ -6,6 +6,9 @@ export interface EmailMessage {
   to: string;
   subject: string;
   text: string;
+  html?: string;
+  /** Display name for the sender, e.g. the store name. The address comes from EMAIL_FROM. */
+  fromName?: string;
 }
 
 export interface EmailProvider {
@@ -22,6 +25,13 @@ class ConsoleEmailProvider implements EmailProvider {
   async send(message: EmailMessage) {
     logger.info({ to: message.to, subject: message.subject }, `📧 [console email]\n${message.text}`);
   }
+}
+
+/** EMAIL_FROM may be "Name <address>" or a bare address; the store name replaces the display name. */
+function sender(fromName?: string) {
+  if (!fromName) return env.EMAIL_FROM;
+  const address = env.EMAIL_FROM.match(/<([^>]+)>/)?.[1] ?? env.EMAIL_FROM.trim();
+  return { name: fromName, address };
 }
 
 /** Sends through any SMTP service (Resend, Postmark, Amazon SES, Mailgun, SendGrid, Google Workspace…). */
@@ -43,7 +53,7 @@ class SmtpEmailProvider implements EmailProvider {
   }
 
   async send(message: EmailMessage) {
-    await this.transport.sendMail({ from: env.EMAIL_FROM, to: message.to, subject: message.subject, text: message.text });
+    await this.transport.sendMail({ from: sender(message.fromName), to: message.to, subject: message.subject, text: message.text, html: message.html });
   }
 }
 

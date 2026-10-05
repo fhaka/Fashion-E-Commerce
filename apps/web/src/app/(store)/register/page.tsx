@@ -7,7 +7,7 @@ export const metadata: Metadata = { title: 'Create an account', robots: { index:
 
 export default function RegisterPage() {
   return (
-    <AuthShell eyebrow="Join Maison" title="Create an account" intro="Faster checkout, order tracking and early access to new collections.">
+    <AuthShell eyebrow="Join us" title="Create an account" intro="Faster checkout, order tracking and early access to new collections.">
       <Suspense>
         <RegisterForm />
       </Suspense>

@@ -5,6 +5,7 @@ import { logger } from '../config/logger';
 import { prisma } from '../db/prisma';
 import { getPaymentProvider, StripePaymentProvider } from '../providers/payment';
 import { describeCoupon, validateCoupon } from '../services/pricing.service';
+import { getSettings, shippingOptions } from '../services/settings.service';
 import * as orders from '../services/order.service';
 import { ApiError } from '../utils/ApiError';
 import { getCartSession } from '../utils/cookies';
@@ -16,6 +17,8 @@ export async function config(_req: Request, res: Response) {
     data: {
       paymentProvider: getPaymentProvider().name,
       reservationMinutes: env.ORDER_RESERVATION_MINUTES,
+      currency: env.STORE_CURRENCY,
+      shippingMethods: shippingOptions(await getSettings()),
     },
   });
 }

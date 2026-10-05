@@ -1,5 +1,7 @@
 import type { Coupon } from '@prisma/client';
-import { FREE_SHIPPING_THRESHOLD, SHIPPING_METHODS, TAX_RATE, type ShippingMethod } from '@maison/shared';
+import { formatMoney, type ShippingMethod } from '@maison/shared';
+import type { StoreSettings } from '@prisma/client';
+import { env } from '../config/env';
 import { prisma } from '../db/prisma';
 import { ApiError } from '../utils/ApiError';
 
@@ -97,7 +99,7 @@ export async function validateCoupon(
   if (coupon.endsAt && coupon.endsAt < now) throw invalid('This code has expired');
   if (coupon.maxUses !== null && coupon.usedCount >= coupon.maxUses) throw invalid('This code has reached its usage limit');
   if (coupon.minSubtotal && subtotal < coupon.minSubtotal) {
-    throw invalid(`Spend $${(coupon.minSubtotal / 100).toFixed(0)} or more to use this code`);
+    throw invalid(`Spend ${money(coupon.minSubtotal)} or more to use this code`);
   }
   if (coupon.perUserLimit && (who.userId || who.email)) {
     const used = await prisma.couponRedemption.count({
@@ -113,37 +115,52 @@ export async function validateCoupon(
 
 /* ───────────────────────── Totals ───────────────────────── */
 
+const money = (cents: number) => formatMoney(cents, env.STORE_CURRENCY, env.STORE_LOCALE);
+
 export interface Totals {
   subtotal: number;
   discountTotal: number;
   shippingTotal: number;
   taxTotal: number;
+  /** True when taxTotal is already inside the prices (shown as "incl. tax", not added). */
+  taxIncluded: boolean;
   total: number;
-  freeShippingThreshold: number;
+  freeShippingThreshold: number | null;
   amountToFreeShipping: number;
 }
 
-export function computeTotals(lines: Pick<PricedLine, 'lineTotal'>[], method: ShippingMethod, coupon: Coupon | null): Totals {
+/** The store rules that affect totals (from Admin → Settings). */
+export type PricingRules = Pick<
+  StoreSettings,
+  'shippingStandardPrice' | 'shippingExpressPrice' | 'freeShippingThreshold' | 'taxRate' | 'pricesIncludeTax'
+>;
+
+export function computeTotals(lines: Pick<PricedLine, 'lineTotal'>[], method: ShippingMethod, coupon: Coupon | null, rules: PricingRules): Totals {
   const subtotal = lines.reduce((s, l) => s + l.lineTotal, 0);
 
   let discountTotal = 0;
   if (coupon?.type === 'PERCENT') discountTotal = Math.round((subtotal * Math.min(coupon.value, 100)) / 100);
   if (coupon?.type === 'FIXED') discountTotal = Math.min(coupon.value, subtotal);
 
-  const qualifiesFree = subtotal >= FREE_SHIPPING_THRESHOLD;
-  let shippingTotal: number = SHIPPING_METHODS[method].price;
+  const threshold = rules.freeShippingThreshold;
+  const qualifiesFree = threshold !== null && subtotal >= threshold;
+  let shippingTotal = method === 'express' ? rules.shippingExpressPrice : rules.shippingStandardPrice;
   if (method === 'standard' && qualifiesFree) shippingTotal = 0;
   if (coupon?.type === 'FREE_SHIPPING') shippingTotal = 0;
 
-  const taxTotal = Math.round((subtotal - discountTotal) * TAX_RATE);
+  // Tax applies to goods after discount. Inclusive prices (EU VAT) already contain it.
+  const taxable = subtotal - discountTotal;
+  const rate = rules.taxRate / 10_000;
+  const taxTotal = rules.pricesIncludeTax ? Math.round(taxable - taxable / (1 + rate)) : Math.round(taxable * rate);
   return {
     subtotal,
     discountTotal,
     shippingTotal,
     taxTotal,
-    total: subtotal - discountTotal + shippingTotal + taxTotal,
-    freeShippingThreshold: FREE_SHIPPING_THRESHOLD,
-    amountToFreeShipping: Math.max(0, FREE_SHIPPING_THRESHOLD - subtotal),
+    taxIncluded: rules.pricesIncludeTax,
+    total: taxable + shippingTotal + (rules.pricesIncludeTax ? 0 : taxTotal),
+    freeShippingThreshold: threshold,
+    amountToFreeShipping: threshold === null ? 0 : Math.max(0, threshold - subtotal),
   };
 }
 
@@ -154,6 +171,6 @@ export function describeCoupon(c: Coupon) {
     value: c.value,
     description:
       c.description ??
-      (c.type === 'PERCENT' ? `${c.value}% off` : c.type === 'FIXED' ? `$${(c.value / 100).toFixed(0)} off` : 'Free shipping'),
+      (c.type === 'PERCENT' ? `${c.value}% off` : c.type === 'FIXED' ? `${money(c.value)} off` : 'Free shipping'),
   };
 }

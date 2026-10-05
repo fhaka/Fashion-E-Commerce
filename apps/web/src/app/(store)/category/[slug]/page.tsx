@@ -36,7 +36,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const title = category.parent ? `${category.name} · ${category.parent.name}` : category.name;
   return {
     title,
-    description: category.description ?? `Shop ${title.toLowerCase()} at Maison.`,
+    description: category.description ?? `Shop ${title.toLowerCase()}.`,
     alternates: { canonical: `/category/${category.slug}` },
     openGraph: { title, description: category.description ?? undefined, images: category.image ? [{ url: category.image }] : undefined },
   };

@@ -4,7 +4,7 @@ import type { LoginInput, RegisterInput } from '@maison/shared';
 import { env } from '../config/env';
 import { logger } from '../config/logger';
 import { prisma } from '../db/prisma';
-import { sendEmail } from '../providers/email';
+import { sendBrandedEmail } from '../providers/email/branded';
 import { assertNotDemoAccount } from './demo.service';
 import { ApiError } from '../utils/ApiError';
 import { addDays, randomToken, sha256 } from '../utils/helpers';
@@ -79,11 +79,12 @@ export async function register(input: RegisterInput, meta: SessionMeta): Promise
     });
   }
 
-  void sendEmail({
-    to: user.email,
-    subject: 'Welcome to Maison',
-    text: `Dear ${user.firstName},\n\nWelcome to Maison. Enjoy 10% off your first order with code WELCOME10.\n\n${env.WEB_URL}/shop`,
-  });
+  void sendBrandedEmail(user.email, (s) => ({
+    subject: `Welcome to ${s.storeName}`,
+    heading: `Welcome, ${user.firstName}`,
+    paragraphs: [`Thank you for creating an account with ${s.storeName}. You can now check out faster, save addresses, keep a wishlist and follow every order.`],
+    button: { label: 'Start shopping', url: `${env.WEB_URL}/shop` },
+  }));
 
   return issueSession(user, meta);
 }
@@ -155,11 +156,13 @@ export async function forgotPassword(email: string) {
     data: { userId: user.id, tokenHash: sha256(token), expiresAt: new Date(Date.now() + RESET_TOKEN_TTL_MS) },
   });
   // Not awaited: waiting on the mail server would make known emails measurably slower to answer.
-  void sendEmail({
-    to: user.email,
-    subject: 'Reset your Maison password',
-    text: `Dear ${user.firstName},\n\nUse the link below to choose a new password. It expires in 1 hour.\n\n${env.WEB_URL}/reset-password?token=${token}\n\nIf you did not request this, you can ignore this email.`,
-  });
+  void sendBrandedEmail(user.email, (s) => ({
+    subject: `Reset your ${s.storeName} password`,
+    heading: 'Choose a new password',
+    paragraphs: [`Dear ${user.firstName},`, 'We received a request to reset your password. Use the button below to choose a new one.'],
+    button: { label: 'Reset password', url: `${env.WEB_URL}/reset-password?token=${token}` },
+    note: 'This link expires in 1 hour. If you did not request it, you can ignore this email; your password stays the same.',
+  }));
 }
 
 export async function resetPassword(token: string, password: string) {

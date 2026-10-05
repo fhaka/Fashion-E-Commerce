@@ -77,6 +77,7 @@ export function toOrderDetail(o: OrderDetailRow) {
     discountTotal: o.discountTotal,
     shippingTotal: o.shippingTotal,
     taxTotal: o.taxTotal,
+    taxIncluded: o.taxIncluded,
     total: o.total,
     couponCode: o.couponCode,
     shippingMethod: o.shippingMethod,

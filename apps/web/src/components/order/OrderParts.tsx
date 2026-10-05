@@ -134,13 +134,13 @@ export function OrderItems({ order }: { order: OrderDetail }) {
   );
 }
 
-export function OrderTotals({ order }: { order: Pick<OrderDetail, 'subtotal' | 'discountTotal' | 'shippingTotal' | 'taxTotal' | 'total' | 'couponCode'> }) {
+export function OrderTotals({ order }: { order: Pick<OrderDetail, 'subtotal' | 'discountTotal' | 'shippingTotal' | 'taxTotal' | 'taxIncluded' | 'total' | 'couponCode'> }) {
   return (
     <dl className="space-y-2.5 text-sm">
       <Row label="Subtotal" value={formatMoney(order.subtotal)} />
       {order.discountTotal > 0 && <Row label={`Discount${order.couponCode ? ` (${order.couponCode})` : ''}`} value={`−${formatMoney(order.discountTotal)}`} accent />}
       <Row label="Shipping" value={order.shippingTotal === 0 ? 'Complimentary' : formatMoney(order.shippingTotal)} />
-      <Row label="Tax" value={formatMoney(order.taxTotal)} />
+      {order.taxTotal > 0 && <Row label={order.taxIncluded ? 'Includes tax' : 'Tax'} value={formatMoney(order.taxTotal)} />}
       <div className="flex items-baseline justify-between border-t border-stone-300 pt-4">
         <dt>Total</dt>
         <dd className="font-display text-2xl tabular-nums">{formatMoney(order.total)}</dd>

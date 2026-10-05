@@ -21,7 +21,7 @@ function Unsubscribe() {
     return (
       <div className="space-y-6">
         <p className="text-stone-600">
-          <strong className="font-medium text-ink">{email}</strong> has been removed from the Maison newsletter. You will still receive emails about any orders you place.
+          <strong className="font-medium text-ink">{email}</strong> has been removed from our newsletter. You will still receive emails about any orders you place.
         </p>
         <ButtonLink href="/">Return to the store</ButtonLink>
       </div>
@@ -30,7 +30,7 @@ function Unsubscribe() {
   return (
     <div className="space-y-6">
       <p className="text-stone-600">
-        Stop sending the Maison newsletter to <strong className="font-medium text-ink">{email}</strong>?
+        Stop sending our newsletter to <strong className="font-medium text-ink">{email}</strong>?
       </p>
       <FormError message={error} />
       <Button
@@ -56,7 +56,7 @@ export default function UnsubscribePage() {
   return (
     <section className="container-site flex min-h-[60vh] items-center py-24">
       <div className="max-w-lg">
-        <p className="eyebrow mb-4 text-stone-500">The Maison letter</p>
+        <p className="eyebrow mb-4 text-stone-500">The newsletter</p>
         <h1 className="mb-8 font-display text-display-sm font-light">Unsubscribe</h1>
         <Suspense>
           <Unsubscribe />

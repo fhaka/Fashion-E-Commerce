@@ -8,7 +8,9 @@ import {
   PRODUCT_STATUSES,
   REVIEW_STATUSES,
   SHIPPING_METHODS,
+  SOCIAL_NETWORKS,
 } from './constants';
+import { contrastRatio } from './color';
 
 /* ---------------------------------- helpers --------------------------------- */
 
@@ -360,3 +362,68 @@ export const adminInventorySchema = z.object({
 });
 
 export const adminReviewStatusSchema = z.object({ status: z.enum(REVIEW_STATUSES) });
+
+/* ------------------------------ store settings ------------------------------ */
+
+const hexColor = z
+  .string()
+  .trim()
+  .regex(/^#[0-9a-fA-F]{6}$/, 'Use a 6-digit hex colour, e.g. #b08d57')
+  .transform((v) => v.toLowerCase());
+const optionalUrl = z
+  .string()
+  .trim()
+  .max(500)
+  .optional()
+  .nullable()
+  .transform((v) => (v ? v : null))
+  .refine((v) => v === null || /^https?:\/\/\S+$/.test(v), 'Enter a full URL starting with https://');
+
+export const storeSettingsSchema = z
+  .object({
+    storeName: trimmed(1, 60),
+    legalName: optionalText(120),
+    tagline: trimmed(2, 80),
+    description: trimmed(10, 300),
+    logoUrl: optionalUrl,
+    supportEmail: emailSchema,
+    phone: optionalText(40),
+    address: optionalText(300),
+    openingHours: optionalText(120),
+    socialLinks: z.object(Object.fromEntries(SOCIAL_NETWORKS.map((n) => [n, optionalUrl])) as Record<(typeof SOCIAL_NETWORKS)[number], typeof optionalUrl>).partial(),
+    announcements: z.array(trimmed(2, 90)).max(5, 'Use at most 5 messages'),
+    highlights: z.array(trimmed(2, 60)).max(8, 'Use at most 8 highlights'),
+    storyStats: z.array(z.object({ value: trimmed(1, 12), label: trimmed(2, 40) })).max(3, 'Use at most 3 figures'),
+    shippingStandardPrice: centsSchema,
+    shippingStandardEta: trimmed(2, 60),
+    shippingExpressPrice: centsSchema,
+    shippingExpressEta: trimmed(2, 60),
+    expressEnabled: z.boolean(),
+    freeShippingThreshold: centsSchema.nullable(),
+    /** Basis points: 800 = 8%. */
+    taxRate: z.coerce.number().int().min(0).max(5000, 'Tax rate must be 50% or less'),
+    pricesIncludeTax: z.boolean(),
+    returnDays: z.coerce.number().int().min(0).max(365),
+    themeInk: hexColor,
+    themeBone: hexColor,
+    themeAccent: hexColor,
+  })
+  .superRefine((v, ctx) => {
+    // Body text is ink on bone/white and bone on ink: keep it readable (WCAG AA).
+    if (contrastRatio(v.themeInk, v.themeBone) < 4.5 || contrastRatio(v.themeInk, '#ffffff') < 4.5) {
+      ctx.addIssue({ code: 'custom', path: ['themeInk'], message: 'Text colour needs more contrast with the background (WCAG AA 4.5:1)' });
+    }
+    // The accent is used for large headings and icons on the dark colour.
+    if (contrastRatio(v.themeAccent, v.themeInk) < 3) {
+      ctx.addIssue({ code: 'custom', path: ['themeAccent'], message: 'Accent needs at least 3:1 contrast with the dark colour' });
+    }
+  });
+export type StoreSettingsInput = z.infer<typeof storeSettingsSchema>;
+
+export const contentPageSchema = z.object({
+  title: trimmed(2, 120),
+  intro: optionalText(600),
+  body: z.string().max(50_000, 'Page is too long'),
+  imageUrl: optionalUrl,
+});
+export type ContentPageInput = z.infer<typeof contentPageSchema>;

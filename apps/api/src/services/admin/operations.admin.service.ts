@@ -1,7 +1,7 @@
 import type { OrderStatus, Prisma, ReviewStatus, Role } from '@prisma/client';
 import { env } from '../../config/env';
 import { prisma } from '../../db/prisma';
-import { sendEmail } from '../../providers/email';
+import { sendBrandedEmail } from '../../providers/email/branded';
 import { ApiError } from '../../utils/ApiError';
 import { pageMeta, paginate } from '../../utils/helpers';
 import { toOrderDetail } from '../account.service';
@@ -126,14 +126,26 @@ export async function updateOrderStatus(
   });
 
   if (input.status === 'SHIPPED' || input.status === 'DELIVERED') {
-    void sendEmail({
-      to: order.email,
-      subject: input.status === 'SHIPPED' ? `Your order ${order.orderNumber} is on its way` : `Your order ${order.orderNumber} has been delivered`,
-      text:
-        input.status === 'SHIPPED'
-          ? `Good news — your order has shipped with ${carrier}.\nTracking number: ${trackingNumber}\n\nTrack it here: ${env.WEB_URL}/track-order?orderNumber=${order.orderNumber}`
-          : 'Your order has been delivered. We hope you love it. If anything is not quite right, returns are free within 30 days.',
-    });
+    const track = { label: 'Track your order', url: `${env.WEB_URL}/track-order?orderNumber=${order.orderNumber}` };
+    void sendBrandedEmail(order.email, (s) =>
+      input.status === 'SHIPPED'
+        ? {
+            subject: `Your order ${order.orderNumber} is on its way`,
+            heading: 'Your order has shipped',
+            paragraphs: [`Good news: order ${order.orderNumber} is on its way with ${carrier}.`],
+            rows: trackingNumber ? [{ label: 'Tracking number', value: trackingNumber }] : undefined,
+            button: track,
+          }
+        : {
+            subject: `Your order ${order.orderNumber} has been delivered`,
+            heading: 'Your order has arrived',
+            paragraphs: [
+              `Order ${order.orderNumber} has been delivered. We hope you love it.`,
+              s.returnDays > 0 ? `If anything isn't quite right, you can return it within ${s.returnDays} days.` : 'If anything is not quite right, please contact us.',
+            ],
+            button: { label: 'View the shop', url: `${env.WEB_URL}/shop` },
+          },
+    );
   }
   return getOrder(id);
 }

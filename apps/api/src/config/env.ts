@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import { z } from 'zod';
+import { isSupportedCurrency } from '@maison/shared';
 
 const bool = z
   .enum(['true', 'false', '1', '0', ''])
@@ -56,6 +57,28 @@ const schema = z.object({
   DEMO_ADMIN_EMAIL: z.string().email().default('admin@maison.test'),
   DEMO_CUSTOMER_EMAIL: z.string().email().default('ava@maison.test'),
   DEMO_RESET_HOUR_UTC: z.coerce.number().int().min(0).max(23).default(3),
+
+  /**
+   * Shop currency (ISO 4217) and number/date locale, fixed per deployment: prices are stored
+   * as cents of this currency. Must match NEXT_PUBLIC_STORE_CURRENCY / _LOCALE on the web app.
+   */
+  STORE_CURRENCY: z
+    .string()
+    .trim()
+    .toUpperCase()
+    .default('USD')
+    .refine(isSupportedCurrency, 'STORE_CURRENCY must be a 3-letter currency with 2 decimals (USD, EUR, GBP, ALL…)'),
+  STORE_LOCALE: z
+    .string()
+    .trim()
+    .default('en-US')
+    .refine((v) => {
+      try {
+        return Intl.NumberFormat.supportedLocalesOf(v).length > 0;
+      } catch {
+        return false;
+      }
+    }, 'STORE_LOCALE must be a locale such as en-US, en-GB, fr-FR, de-DE or sq-AL'),
 
   ORDER_RESERVATION_MINUTES: z.coerce.number().int().positive().default(30),
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']).default('info'),

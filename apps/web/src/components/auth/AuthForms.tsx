@@ -10,6 +10,7 @@ import { useAuth } from '@/stores/auth';
 import { toast } from '@/stores/toast';
 import { Button, ButtonLink } from '../ui/Button';
 import { Checkbox, FormError, Input, zodFieldErrors } from '../ui/Field';
+import { useSite } from '../layout/SiteProvider';
 
 function useRedirectIfSignedIn() {
   const { status } = useAuth();
@@ -31,6 +32,7 @@ function handleError(err: unknown, setErrors: (e: Record<string, string>) => voi
 
 export function LoginForm() {
   useRedirectIfSignedIn();
+  const { storeName } = useSite();
   const login = useAuth((s) => s.login);
   const router = useRouter();
   const params = useSearchParams();
@@ -70,7 +72,7 @@ export function LoginForm() {
         Sign in
       </Button>
       <div className="border-t border-stone-200 pt-8 text-center">
-        <p className="text-sm text-stone-600">New to Maison?</p>
+        <p className="text-sm text-stone-600">New to {storeName}?</p>
         <ButtonLink href={`/register${params.get('next') ? `?next=${encodeURIComponent(params.get('next')!)}` : ''}`} variant="outline" className="mt-4 w-full">
           Create an account
         </ButtonLink>
@@ -83,6 +85,7 @@ export function LoginForm() {
 
 export function RegisterForm() {
   useRedirectIfSignedIn();
+  const { storeName } = useSite();
   const register = useAuth((s) => s.register);
   const router = useRouter();
   const params = useSearchParams();
@@ -102,7 +105,7 @@ export function RegisterForm() {
     setLoading(true);
     try {
       const user = await register(parsed.data);
-      toast.success(`Welcome to Maison, ${user.firstName}`);
+      toast.success(`Welcome to ${storeName}, ${user.firstName}`);
       router.replace(safeNext(params.get('next')));
     } catch (err) {
       handleError(err, setErrors, setFormError);

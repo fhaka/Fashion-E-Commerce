@@ -126,20 +126,14 @@ export function CampaignBanner({ banner }: { banner?: Banner }) {
 
 /* ───────────────────────── 8. Brand story ───────────────────────── */
 
-const STATS = [
-  { value: '2009', label: 'Founded in Paris' },
-  { value: '14', label: 'Family-run mills' },
-  { value: '100%', label: 'Natural fibres' },
-];
-
-export function BrandStory({ story }: { story?: Banner }) {
+export function BrandStory({ story, stats }: { story?: Banner; stats: { value: string; label: string }[] }) {
   if (!story) return null;
   return (
     <section className="bg-ink py-(--spacing-section) text-bone" aria-labelledby="story-heading">
       <div className="container-site grid items-center gap-14 lg:grid-cols-12 lg:gap-10">
         <div className="relative lg:col-span-6">
           <Parallax className="aspect-[4/5] w-[82%] bg-ink-soft" offset={50}>
-            <Img src={story.image} alt="Inside the Maison atelier" fill sizes="(min-width: 1024px) 42vw, 82vw" className="object-cover" />
+            <Img src={story.image} alt={story.title} fill sizes="(min-width: 1024px) 42vw, 82vw" className="object-cover" />
           </Parallax>
           {story.mobileImage && (
             <Reveal delay={0.2} className="absolute right-0 -bottom-12 w-[46%] border-[6px] border-ink sm:-bottom-16">
@@ -162,7 +156,7 @@ export function BrandStory({ story }: { story?: Banner }) {
             </Reveal>
           )}
           <Stagger className="mt-12 grid grid-cols-3 gap-6 border-t border-bone/15 pt-10" delay={0.2}>
-            {STATS.map((s) => (
+            {stats.map((s) => (
               <StaggerItem key={s.label}>
                 <p className="font-display text-4xl font-light lg:text-5xl">{s.value}</p>
                 <p className="mt-2 text-xs text-bone/60">{s.label}</p>

@@ -3,7 +3,8 @@
 import { AnimatePresence, motion } from 'motion/react';
 import { FlaskConical, X } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useState } from 'react';
+import { useDemo } from '../layout/SiteProvider';
 import type { DemoInfo } from '@/lib/types';
 import { cn, EASE } from '@/lib/utils';
 import { useAuth } from '@/stores/auth';
@@ -11,13 +12,8 @@ import { toast } from '@/stores/toast';
 
 /* Public sales demo (API DEMO_MODE=true). Everything here renders nothing on a real shop. */
 
-const DemoContext = createContext<DemoInfo | null>(null);
+export { useDemo };
 
-export function DemoProvider({ demo, children }: { demo: DemoInfo | null; children: ReactNode }) {
-  return <DemoContext.Provider value={demo}>{children}</DemoContext.Provider>;
-}
-
-export const useDemo = () => useContext(DemoContext);
 
 const resetTime = (demo: DemoInfo) => `${String(demo.resetHourUtc).padStart(2, '0')}:00 UTC`;
 

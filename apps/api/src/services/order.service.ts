@@ -1,17 +1,18 @@
 import crypto from 'node:crypto';
 import { Prisma, type Coupon, type OrderStatus } from '@prisma/client';
-import { CURRENCY, formatMoney, type CheckoutInput, type QuoteInput } from '@maison/shared';
+import type { CheckoutInput, QuoteInput } from '@maison/shared';
 import { env } from '../config/env';
 import { logger } from '../config/logger';
 import { prisma, type Tx } from '../db/prisma';
 import { getPaymentProvider } from '../providers/payment';
-import { sendEmail } from '../providers/email';
+import { money, sendBrandedEmail } from '../providers/email/branded';
 import { ApiError } from '../utils/ApiError';
 import { addMinutes } from '../utils/helpers';
 import { revalidateStorefront } from '../utils/revalidate';
 import type { CartOwner } from './cart.service';
 import { computeTotals, describeCoupon, priceLines, validateCoupon, type PricedLine } from './pricing.service';
 import { toOrderDetail } from './account.service';
+import { assertShippingMethodAvailable, getSettings } from './settings.service';
 
 const ORDER_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 function generateOrderNumber() {
@@ -37,6 +38,8 @@ async function resolveItems(owner: CartOwner, items?: { variantId: string; quant
 /* ───────────────────────── Quote ───────────────────────── */
 
 export async function quote(owner: CartOwner, input: QuoteInput, email?: string) {
+  const settings = await getSettings();
+  assertShippingMethodAvailable(settings, input.shippingMethod);
   const { items } = await resolveItems(owner, input.items);
   const lines = await priceLines(items);
   const subtotal = lines.reduce((s, l) => s + l.lineTotal, 0);
@@ -56,7 +59,7 @@ export async function quote(owner: CartOwner, input: QuoteInput, email?: string)
     coupon: coupon ? describeCoupon(coupon) : null,
     couponError,
     shippingMethod: input.shippingMethod,
-    ...computeTotals(lines, input.shippingMethod, coupon),
+    ...computeTotals(lines, input.shippingMethod, coupon, settings),
   };
 }
 
@@ -94,11 +97,13 @@ async function lockOrder(tx: Tx, orderId: string) {
 /* ───────────────────────── Create order ───────────────────────── */
 
 export async function createOrder(owner: CartOwner, input: CheckoutInput) {
+  const settings = await getSettings();
+  assertShippingMethodAvailable(settings, input.shippingMethod);
   const { items, cartId } = await resolveItems(owner, input.items);
   const lines = await priceLines(items);
   const subtotal = lines.reduce((s, l) => s + l.lineTotal, 0);
   const coupon = input.couponCode ? await validateCoupon(input.couponCode, subtotal, { userId: owner.userId, email: input.email }) : null;
-  const totals = computeTotals(lines, input.shippingMethod, coupon);
+  const totals = computeTotals(lines, input.shippingMethod, coupon, settings);
 
   const shippingAddress = { ...input.shippingAddress };
   const billingAddress = input.billingSameAsShipping || !input.billingAddress ? shippingAddress : { ...input.billingAddress };
@@ -115,11 +120,12 @@ export async function createOrder(owner: CartOwner, input: CheckoutInput) {
         userId: owner.userId ?? null,
         email: input.email,
         status: 'PENDING',
-        currency: CURRENCY,
+        currency: env.STORE_CURRENCY,
         subtotal: totals.subtotal,
         discountTotal: totals.discountTotal,
         shippingTotal: totals.shippingTotal,
         taxTotal: totals.taxTotal,
+        taxIncluded: totals.taxIncluded,
         total: totals.total,
         shippingMethod: input.shippingMethod,
         shippingAddress: shippingAddress as Prisma.InputJsonValue,
@@ -243,17 +249,21 @@ export async function markOrderPaid(orderId: string, providerRef?: string) {
   if (result) {
     // Stock changed: refresh those product pages.
     revalidateStorefront(result.items.map((i) => i.productSlug).filter((x): x is string => !!x).map((slug) => `product:${slug}`));
-    void sendEmail({
-      to: result.email,
-      subject: `Order confirmed — ${result.orderNumber}`,
-      text: [
-        'Thank you for your order.',
-        '',
-        ...result.items.map((i) => `${i.quantity} × ${i.productName} (${i.variantLabel}) — ${formatMoney(i.lineTotal)}`),
-        '',
-        `Total: ${formatMoney(result.total)}`,
-        `Track your order: ${env.WEB_URL}/track-order?orderNumber=${result.orderNumber}`,
-      ].join('\n'),
+    const order = result;
+    void sendBrandedEmail(order.email, {
+      subject: `Order confirmed — ${order.orderNumber}`,
+      preheader: `We've received your order ${order.orderNumber}.`,
+      heading: 'Thank you for your order',
+      paragraphs: [`Your order ${order.orderNumber} is confirmed. We'll email you again as soon as it ships.`],
+      rows: [
+        ...order.items.map((i) => ({ label: `${i.quantity} × ${i.productName} (${i.variantLabel})`, value: money(i.lineTotal) })),
+        { label: 'Subtotal', value: money(order.subtotal) },
+        ...(order.discountTotal ? [{ label: `Discount${order.couponCode ? ` (${order.couponCode})` : ''}`, value: `−${money(order.discountTotal)}` }] : []),
+        { label: 'Shipping', value: order.shippingTotal ? money(order.shippingTotal) : 'Free' },
+        ...(order.taxTotal ? [{ label: order.taxIncluded ? 'Includes tax' : 'Tax', value: money(order.taxTotal) }] : []),
+        { label: 'Total', value: money(order.total), strong: true },
+      ],
+      button: { label: 'Track your order', url: `${env.WEB_URL}/track-order?orderNumber=${order.orderNumber}` },
     });
   }
   return result;
@@ -350,7 +360,7 @@ export async function refundOrder(orderId: string, opts: { restock: boolean; act
           create: {
             status: finalStatus,
             actorId: opts.actorId,
-            note: opts.note ?? (finalStatus === 'CANCELLED' ? 'Order cancelled and refunded' : `Refund of ${formatMoney(order.total)} issued`),
+            note: opts.note ?? (finalStatus === 'CANCELLED' ? 'Order cancelled and refunded' : `Refund of ${money(order.total)} issued`),
           },
         },
       },
@@ -358,10 +368,13 @@ export async function refundOrder(orderId: string, opts: { restock: boolean; act
   });
 
   if (opts.restock) revalidateStorefront(order.items.map((i) => i.productSlug).filter((x): x is string => !!x).map((slug) => `product:${slug}`));
-  void sendEmail({
-    to: order.email,
+  void sendBrandedEmail(order.email, {
     subject: `Your refund for ${order.orderNumber}`,
-    text: `We have issued a refund of ${formatMoney(order.total)} to your original payment method. It may take 5–10 business days to appear.`,
+    heading: 'Your refund is on its way',
+    paragraphs: [
+      `We have issued a refund of ${money(order.total)} for order ${order.orderNumber} to your original payment method.`,
+      'It may take 5–10 business days to appear on your statement.',
+    ],
   });
 }
 

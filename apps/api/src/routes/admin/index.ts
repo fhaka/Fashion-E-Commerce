@@ -12,12 +12,15 @@ import {
   adminReviewStatusSchema,
   adminSizeSchema,
   BANNER_PLACEMENTS,
+  contentPageSchema,
+  storeSettingsSchema,
   ORDER_STATUSES,
   PRODUCT_STATUSES,
   REVIEW_STATUSES,
   paginationSchema,
 } from '@maison/shared';
 import * as c from '../../controllers/admin.controller';
+import * as settings from '../../controllers/settings.controller';
 import { authenticate, requireAdmin } from '../../middleware/auth';
 import { uploadLimiter } from '../../middleware/rateLimit';
 import { imageUpload } from '../../middleware/upload';
@@ -176,3 +179,11 @@ adminRouter.get(
 );
 adminRouter.get('/messages', validate({ query: paginationSchema }), c.listMessages);
 adminRouter.patch('/messages/:id', validate({ body: z.object({ isRead: z.boolean() }) }), c.markMessage);
+
+/* Store settings & content pages */
+adminRouter.get('/settings', settings.getSettings);
+adminRouter.put('/settings', validate({ body: storeSettingsSchema }), settings.updateSettings);
+adminRouter.get('/pages', settings.listPages);
+adminRouter.get('/pages/:slug', settings.getPage);
+adminRouter.put('/pages/:slug', validate({ body: contentPageSchema }), settings.updatePage);
+adminRouter.post('/pages/:slug/reset', settings.resetPage);

@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { formatMoney } from '@/lib/utils';
 import { Button } from '../ui/Button';
 import { FormError } from '../ui/Field';
+import { useSite } from '../layout/SiteProvider';
 
 let stripePromise: Promise<Stripe | null> | null = null;
 const getStripe = () => (stripePromise ??= loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? ''));
@@ -16,6 +17,7 @@ const getStripe = () => (stripePromise ??= loadStripe(process.env.NEXT_PUBLIC_ST
  * signed Stripe webhook, never by the browser.
  */
 export function StripePayment({ clientSecret, total, returnUrl }: { clientSecret: string; total: number; returnUrl: string }) {
+  const { theme } = useSite();
   if (!process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY) {
     return <FormError message="Stripe is enabled on the server but NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY is missing in the storefront environment." />;
   }
@@ -26,7 +28,7 @@ export function StripePayment({ clientSecret, total, returnUrl }: { clientSecret
         clientSecret,
         appearance: {
           theme: 'flat',
-          variables: { colorPrimary: '#0e0e0e', colorText: '#0e0e0e', borderRadius: '0px', fontFamily: 'Inter, system-ui, sans-serif' },
+          variables: { colorPrimary: theme.ink, colorText: theme.ink, borderRadius: '0px', fontFamily: 'Inter, system-ui, sans-serif' },
         },
       }}
     >

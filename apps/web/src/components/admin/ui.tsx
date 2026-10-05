@@ -1,8 +1,10 @@
 'use client';
 
-import { ArrowDownRight, ArrowUpRight, ChevronLeft, ChevronRight, Search } from 'lucide-react';
-import { useEffect, useState, type ReactNode } from 'react';
+import { ArrowDownRight, ArrowUpRight, ChevronLeft, ChevronRight, ImagePlus, Search } from 'lucide-react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { api, ApiRequestError } from '@/lib/api';
 import { cn } from '@/lib/utils';
+import { toast } from '@/stores/toast';
 import { Button } from '../ui/Button';
 import { Modal } from '../ui/Modal';
 
@@ -320,7 +322,23 @@ export function ConfirmDialog({
   );
 }
 
-export function TextArea({ label, value, onChange, rows = 4, hint }: { label: string; value: string; onChange: (v: string) => void; rows?: number; hint?: string }) {
+export function TextArea({
+  label,
+  value,
+  onChange,
+  rows = 4,
+  hint,
+  error,
+  className,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  rows?: number;
+  hint?: string;
+  error?: string;
+  className?: string;
+}) {
   return (
     <label className="block">
       <span className="mb-2 block text-[0.68rem] tracking-[0.14em] uppercase">{label}</span>
@@ -328,9 +346,64 @@ export function TextArea({ label, value, onChange, rows = 4, hint }: { label: st
         value={value}
         rows={rows}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full resize-y border border-stone-300 bg-transparent px-4 py-3 text-sm outline-none focus:border-ink"
+        aria-invalid={!!error || undefined}
+        className={cn('w-full resize-y border bg-transparent px-4 py-3 text-sm outline-none focus:border-ink', error ? 'border-sale' : 'border-stone-300', className)}
       />
-      {hint && <span className="mt-1.5 block text-xs text-stone-500">{hint}</span>}
+      {error ? <span className="mt-1.5 block text-xs text-sale">{error}</span> : hint && <span className="mt-1.5 block text-xs text-stone-500">{hint}</span>}
     </label>
+  );
+}
+
+/** Single image picker: upload (stored like product images) or paste a URL. */
+export function ImageField({ label, value, onChange, folder, hint, previewClassName = 'h-24 w-24' }: { label: string; value: string; onChange: (url: string) => void; folder: string; hint?: string; previewClassName?: string }) {
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+  const upload = async (file: File | undefined) => {
+    if (!file) return;
+    const body = new FormData();
+    body.append('files', file);
+    setUploading(true);
+    try {
+      const [stored] = await api<{ url: string }[]>('/admin/uploads', { method: 'POST', body, query: { folder } });
+      onChange(stored.url);
+    } catch (err) {
+      toast.error(err instanceof ApiRequestError ? err.message : 'Upload failed');
+    } finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = '';
+    }
+  };
+  return (
+    <div>
+      <span className="mb-2 block text-[0.68rem] tracking-[0.14em] uppercase">{label}</span>
+      <div className="flex items-start gap-4">
+        <span className={cn('flex shrink-0 items-center justify-center overflow-hidden border border-stone-200 bg-stone-100 p-2', previewClassName)}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          {value ? <img src={value} alt="" className="max-h-full max-w-full object-contain" /> : <span className="text-[0.62rem] tracking-[0.14em] text-stone-500 uppercase">None</span>}
+        </span>
+        <div className="min-w-0 flex-1 space-y-2">
+          <input
+            type="url"
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder="https://…"
+            aria-label={`${label} URL`}
+            className="h-10 w-full border border-stone-300 bg-transparent px-3 text-sm outline-none focus:border-ink"
+          />
+          <div className="flex gap-2">
+            <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp,image/avif" className="sr-only" tabIndex={-1} aria-label={`Upload ${label}`} onChange={(e) => upload(e.target.files?.[0])} />
+            <Button type="button" size="sm" variant="outline" loading={uploading} onClick={() => fileRef.current?.click()}>
+              <ImagePlus className="h-3.5 w-3.5" /> Upload
+            </Button>
+            {value && (
+              <Button type="button" size="sm" variant="ghost" onClick={() => onChange('')}>
+                Remove
+              </Button>
+            )}
+          </div>
+          {hint && <p className="text-xs text-stone-500">{hint}</p>}
+        </div>
+      </div>
+    </div>
   );
 }

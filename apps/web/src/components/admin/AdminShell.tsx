@@ -4,6 +4,7 @@ import {
   BarChart3,
   Boxes,
   ExternalLink,
+  FileText,
   FolderTree,
   Image as ImageIcon,
   LayoutDashboard,
@@ -14,6 +15,7 @@ import {
   MessageSquareQuote,
   Package,
   Palette,
+  Settings,
   ShoppingBag,
   Star,
   Tag,
@@ -26,6 +28,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/stores/auth';
 import { ButtonLink } from '../ui/Button';
+import { useSite } from '../layout/SiteProvider';
 
 const NAV: { group: string; items: { href: string; label: string; icon: typeof Package; exact?: boolean }[] }[] = [
   {
@@ -60,11 +63,17 @@ const NAV: { group: string; items: { href: string; label: string; icon: typeof P
       { href: '/admin/banners', label: 'Homepage banners', icon: ImageIcon },
       { href: '/admin/reviews', label: 'Reviews', icon: MessageSquareQuote },
       { href: '/admin/newsletter', label: 'Newsletter & messages', icon: Mail },
+      { href: '/admin/pages', label: 'Pages', icon: FileText },
     ],
+  },
+  {
+    group: 'Store',
+    items: [{ href: '/admin/settings', label: 'Settings', icon: Settings }],
   },
 ];
 
 export function AdminShell({ children }: { children: ReactNode }) {
+  const { storeName } = useSite();
   const { user, status, logout } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
@@ -87,7 +96,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
     return (
       <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-stone-100 px-6 text-center">
         <p className="font-display text-4xl font-light">Staff only</p>
-        <p className="max-w-sm text-stone-600">Your account does not have access to the Maison admin. If you think this is a mistake, contact your administrator.</p>
+        <p className="max-w-sm text-stone-600">Your account does not have access to the {storeName} admin. If you think this is a mistake, contact your administrator.</p>
         <ButtonLink href="/">Back to the store</ButtonLink>
       </div>
     );
@@ -126,7 +135,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
       {/* Sidebar (desktop) */}
       <aside className="sticky top-0 hidden h-svh flex-col overflow-y-auto bg-ink text-bone lg:flex">
         <Link href="/admin" className="block border-b border-bone/10 px-6 py-6 font-display text-2xl tracking-[0.3em] uppercase">
-          Maison
+          <span className="block truncate">{storeName}</span>
           <span className="mt-1 block font-sans text-[0.6rem] tracking-[0.2em] text-bone/50">Admin</span>
         </Link>
         <div className="flex-1">{nav}</div>
@@ -138,7 +147,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
           <div className="absolute inset-0 bg-ink/50" onClick={() => setOpen(false)} aria-hidden />
           <aside className="absolute inset-y-0 left-0 w-72 overflow-y-auto bg-ink text-bone">
             <div className="flex items-center justify-between border-b border-bone/10 px-6 py-5">
-              <span className="font-display text-2xl tracking-[0.3em] uppercase">Maison</span>
+              <span className="truncate font-display text-2xl tracking-[0.3em] uppercase">{storeName}</span>
               <button type="button" onClick={() => setOpen(false)} aria-label="Close menu">
                 <X className="h-5 w-5" />
               </button>
