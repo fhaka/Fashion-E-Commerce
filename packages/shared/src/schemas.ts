@@ -16,7 +16,9 @@ const trimmed = (min = 1, max = 255) =>
   z
     .string({ required_error: 'This field is required' })
     .trim()
-    .min(min, min <= 1 ? 'This field is required' : `Please enter at least ${min} characters`)
+    // Empty input gets "required"; short input gets the length hint (first issue wins in the UI).
+    .min(1, 'This field is required')
+    .min(min, `Please enter at least ${min} characters`)
     .max(max, `Please use ${max} characters or fewer`);
 const optionalText = (max = 255) =>
   z

@@ -115,7 +115,8 @@ export async function apiFetch<T>(path: string, init: Init = {}): Promise<T> {
   return parse<T>(res);
 }
 
-/** `{ data }` envelope helper. */
+/** `{ data }` envelope helper. 204 No Content resolves to undefined. */
 export async function api<T>(path: string, init?: Init): Promise<T> {
-  return (await apiFetch<{ data: T }>(path, init)).data;
+  const body = await apiFetch<{ data: T } | undefined>(path, init);
+  return body?.data as T;
 }
