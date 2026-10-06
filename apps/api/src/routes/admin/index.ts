@@ -22,6 +22,7 @@ import {
 import * as c from '../../controllers/admin.controller';
 import * as settings from '../../controllers/settings.controller';
 import { authenticate, requireAdmin } from '../../middleware/auth';
+import { requireFeature } from '../../middleware/plan';
 import { uploadLimiter } from '../../middleware/rateLimit';
 import { imageUpload } from '../../middleware/upload';
 import { validate } from '../../middleware/validate';
@@ -43,6 +44,7 @@ const DAY = 86_400_000;
 adminRouter.get('/stats/overview', validate({ query: z.object({ range: z.coerce.number().int().refine((n) => [7, 30, 90, 365].includes(n), 'Use 7, 30, 90 or 365').default(30) }) }), c.overview);
 adminRouter.get(
   '/reports/sales',
+  requireFeature('reports'),
   validate({
     query: z
       .object({
@@ -101,7 +103,7 @@ adminRouter.delete('/uploads', validate({ body: z.object({ publicId: z.string().
 adminRouter.get('/inventory', validate({ query: paginationSchema.extend({ q, filter: z.enum(['all', 'low', 'out']).default('all') }) }), c.listInventory);
 adminRouter.get('/inventory/low-stock', c.lowStock);
 adminRouter.patch('/inventory/:variantId', validate({ body: adminInventorySchema }), c.adjustInventory);
-adminRouter.get('/inventory/:variantId/movements', validate({ query: paginationSchema }), c.inventoryMovements);
+adminRouter.get('/inventory/:variantId/movements', requireFeature('inventoryHistory'), validate({ query: paginationSchema }), c.inventoryMovements);
 
 /* Categories, collections, sizes, colours */
 adminRouter.get('/categories', c.listCategories);
@@ -109,12 +111,12 @@ adminRouter.post('/categories', validate({ body: adminCategorySchema }), c.creat
 adminRouter.put('/categories/:id', validate({ body: adminCategorySchema }), c.updateCategory);
 adminRouter.delete('/categories/:id', c.deleteCategory);
 
-adminRouter.get('/collections', c.listCollections);
-adminRouter.get('/collections/:id', c.getCollection);
-adminRouter.post('/collections', validate({ body: adminCollectionSchema }), c.createCollection);
-adminRouter.put('/collections/:id', validate({ body: adminCollectionSchema }), c.updateCollection);
-adminRouter.put('/collections/:id/products', validate({ body: z.object({ productIds: z.array(z.string().max(64)).max(500) }) }), c.setCollectionProducts);
-adminRouter.delete('/collections/:id', c.deleteCollection);
+adminRouter.get('/collections', requireFeature('collections'), c.listCollections);
+adminRouter.get('/collections/:id', requireFeature('collections'), c.getCollection);
+adminRouter.post('/collections', requireFeature('collections'), validate({ body: adminCollectionSchema }), c.createCollection);
+adminRouter.put('/collections/:id', requireFeature('collections'), validate({ body: adminCollectionSchema }), c.updateCollection);
+adminRouter.put('/collections/:id/products', requireFeature('collections'), validate({ body: z.object({ productIds: z.array(z.string().max(64)).max(500) }) }), c.setCollectionProducts);
+adminRouter.delete('/collections/:id', requireFeature('collections'), c.deleteCollection);
 
 adminRouter.get('/sizes', c.listSizes);
 adminRouter.post('/sizes', validate({ body: adminSizeSchema }), c.createSize);
@@ -126,10 +128,10 @@ adminRouter.put('/colors/:id', validate({ body: adminColorSchema }), c.updateCol
 adminRouter.delete('/colors/:id', c.deleteColor);
 
 /* Coupons */
-adminRouter.get('/coupons', c.listCoupons);
-adminRouter.post('/coupons', validate({ body: adminCouponSchema }), c.createCoupon);
-adminRouter.put('/coupons/:id', validate({ body: adminCouponSchema }), c.updateCoupon);
-adminRouter.delete('/coupons/:id', c.deleteCoupon);
+adminRouter.get('/coupons', requireFeature('coupons'), c.listCoupons);
+adminRouter.post('/coupons', requireFeature('coupons'), validate({ body: adminCouponSchema }), c.createCoupon);
+adminRouter.put('/coupons/:id', requireFeature('coupons'), validate({ body: adminCouponSchema }), c.updateCoupon);
+adminRouter.delete('/coupons/:id', requireFeature('coupons'), c.deleteCoupon);
 
 /* Banners */
 adminRouter.get('/banners', validate({ query: z.object({ placement: z.enum(BANNER_PLACEMENTS).optional() }) }), c.listBanners);
@@ -151,7 +153,7 @@ adminRouter.patch(
   validate({ body: z.object({ trackingNumber: z.string().trim().max(100).nullable().optional(), carrier: z.string().trim().max(60).nullable().optional(), note: z.string().trim().max(500).optional() }) }),
   c.updateOrderMeta,
 );
-adminRouter.post('/orders/:id/refund', validate({ body: z.object({ restock: z.boolean().default(false), note: z.string().trim().max(500).optional() }) }), c.refundOrder);
+adminRouter.post('/orders/:id/refund', requireFeature('refunds'), validate({ body: z.object({ restock: z.boolean().default(false), note: z.string().trim().max(500).optional() }) }), c.refundOrder);
 
 /* Customers */
 adminRouter.get('/customers', validate({ query: paginationSchema.extend({ q, role: z.enum(['CUSTOMER', 'ADMIN']).optional() }) }), c.listCustomers);
@@ -165,15 +167,17 @@ adminRouter.patch(
 /* Reviews */
 adminRouter.get(
   '/reviews',
+  requireFeature('reviews'),
   validate({ query: paginationSchema.extend({ q, status: z.enum(REVIEW_STATUSES).optional(), rating: z.coerce.number().int().min(1).max(5).optional() }) }),
   c.listReviews,
 );
-adminRouter.patch('/reviews/:id', validate({ body: adminReviewStatusSchema }), c.setReviewStatus);
-adminRouter.delete('/reviews/:id', c.deleteReview);
+adminRouter.patch('/reviews/:id', requireFeature('reviews'), validate({ body: adminReviewStatusSchema }), c.setReviewStatus);
+adminRouter.delete('/reviews/:id', requireFeature('reviews'), c.deleteReview);
 
 /* Newsletter & messages */
 adminRouter.get(
   '/newsletter',
+  requireFeature('newsletter'),
   validate({ query: paginationSchema.extend({ q, status: z.enum(['SUBSCRIBED', 'UNSUBSCRIBED']).optional(), format: z.enum(['json', 'csv']).default('json') }) }),
   c.listSubscribers,
 );

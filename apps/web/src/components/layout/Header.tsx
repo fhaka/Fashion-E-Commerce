@@ -20,7 +20,7 @@ import { Announcements, Wordmark } from './Wordmark';
 export function Header({ categories, collections }: { categories: CategoryNode[]; collections: Collection[] }) {
   const pathname = usePathname();
   const hasHero = routeHasHero(pathname);
-  const { storeName, announcements } = useSite();
+  const { storeName, announcements, features } = useSite();
   const [scrolled, setScrolled] = useState(false);
   const [hidden, setHidden] = useState(false);
   const [active, setActive] = useState<string | null>(null);
@@ -50,7 +50,7 @@ export function Header({ categories, collections }: { categories: CategoryNode[]
   const nav: NavItem[] = [
     { label: 'New In', href: '/shop?isNew=true' },
     ...categories.map((c) => ({ label: c.name, href: `/category/${c.slug}`, category: c })),
-    { label: 'Collections', href: '/collections', collections },
+    ...(collections.length ? [{ label: 'Collections', href: '/collections', collections }] : []),
     { label: 'Sale', href: '/shop?onSale=true', accent: true },
   ];
 
@@ -106,7 +106,7 @@ export function Header({ categories, collections }: { categories: CategoryNode[]
               <nav aria-label="Main" className="hidden xl:block">
                 <ul className="flex items-center gap-5 2xl:gap-7">
                   {nav.map((item) => {
-                    const hasPanel = !!(item.category || item.collections);
+                    const hasPanel = features.megaMenu && !!(item.category || item.collections);
                     return (
                       <li key={item.label} onMouseEnter={() => (hasPanel ? open(item.label) : open(null))}>
                         <Link
@@ -144,10 +144,12 @@ export function Header({ categories, collections }: { categories: CategoryNode[]
               <Link href={user ? '/account' : '/login'} className="hidden p-2 sm:block" aria-label={user ? 'Your account' : 'Sign in'}>
                 <User className="h-[1.15rem] w-[1.15rem]" strokeWidth={1.4} />
               </Link>
-              <Link href="/wishlist" className="relative hidden p-2 sm:block" aria-label={`Wishlist, ${pluralize(wishCount, 'item')}`}>
-                <Heart className="h-[1.15rem] w-[1.15rem]" strokeWidth={1.4} />
-                <CountBadge count={wishCount} />
-              </Link>
+              {features.wishlist && (
+                <Link href="/wishlist" className="relative hidden p-2 sm:block" aria-label={`Wishlist, ${pluralize(wishCount, 'item')}`}>
+                  <Heart className="h-[1.15rem] w-[1.15rem]" strokeWidth={1.4} />
+                  <CountBadge count={wishCount} />
+                </Link>
+              )}
               <button type="button" onClick={openCart} className="relative -mr-2 p-2" aria-label={`Shopping bag, ${pluralize(itemCount, 'item')}`}>
                 <ShoppingBag className="h-[1.15rem] w-[1.15rem]" strokeWidth={1.4} />
                 <CountBadge count={itemCount} />

@@ -8,9 +8,9 @@ import { api, ApiRequestError } from '@/lib/api';
 import { safeNext } from '@/lib/safeRedirect';
 import { useAuth } from '@/stores/auth';
 import { toast } from '@/stores/toast';
+import { useSite } from '../layout/SiteProvider';
 import { Button, ButtonLink } from '../ui/Button';
 import { Checkbox, FormError, Input, zodFieldErrors } from '../ui/Field';
-import { useSite } from '../layout/SiteProvider';
 
 function useRedirectIfSignedIn() {
   const { status } = useAuth();
@@ -85,7 +85,7 @@ export function LoginForm() {
 
 export function RegisterForm() {
   useRedirectIfSignedIn();
-  const { storeName } = useSite();
+  const { storeName, features } = useSite();
   const register = useAuth((s) => s.register);
   const router = useRouter();
   const params = useSearchParams();
@@ -131,7 +131,7 @@ export function RegisterForm() {
         hint="At least 8 characters, including a letter and a number."
         required
       />
-      <Checkbox label="Send me early access to new collections and private sales (10% off your first order)." checked={values.newsletter} onChange={set('newsletter')} />
+      {features.newsletter && <Checkbox label="Send me news about new arrivals and private sales." checked={values.newsletter} onChange={set('newsletter')} />}
       <Button type="submit" size="lg" className="w-full" loading={loading}>
         Create account
       </Button>

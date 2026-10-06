@@ -9,6 +9,7 @@ import { api, apiFetch, ApiRequestError } from '@/lib/api';
 import type { Paginated, ProductDetail } from '@/lib/types';
 import { cn, EASE } from '@/lib/utils';
 import { useAuth } from '@/stores/auth';
+import { useFeature } from '../layout/SiteProvider';
 import { Reveal } from '../motion';
 import { Button } from '../ui/Button';
 import { Stars } from '../ui/Stars';
@@ -26,7 +27,7 @@ interface Review {
 
 const FIT_LABEL = { RUNS_SMALL: 'Runs small', TRUE_TO_SIZE: 'True to size', RUNS_LARGE: 'Runs large' } as const;
 
-export function Reviews({ product }: { product: ProductDetail }) {
+function ReviewsInner({ product }: { product: ProductDetail }) {
   const summary = product.reviewSummary;
   const [sort, setSort] = useState<'newest' | 'highest' | 'lowest'>('newest');
   const [rating, setRating] = useState<number | null>(null);
@@ -335,4 +336,9 @@ function ReviewForm({ slug, onDone }: { slug: string; onDone: () => void }) {
       </p>
     </form>,
   );
+}
+
+/** Rendered only when the store plan includes "reviews". */
+export function Reviews(props: { product: ProductDetail }) {
+  return useFeature('reviews') ? <ReviewsInner {...props} /> : null;
 }

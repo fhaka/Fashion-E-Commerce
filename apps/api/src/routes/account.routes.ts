@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { addressSchema, paginationSchema, updateProfileSchema } from '@maison/shared';
 import * as c from '../controllers/account.controller';
 import { authenticate } from '../middleware/auth';
+import { requireFeature } from '../middleware/plan';
 import { validate } from '../middleware/validate';
 
 export const accountRouter = Router();
@@ -19,7 +20,7 @@ accountRouter.get('/orders', validate({ query: paginationSchema }), c.listOrders
 accountRouter.get('/orders/:orderNumber', c.getOrder);
 
 export const wishlistRouter = Router();
-wishlistRouter.use(authenticate);
+wishlistRouter.use(requireFeature('wishlist'), authenticate);
 wishlistRouter.get('/', c.getWishlist);
 wishlistRouter.get('/ids', c.getWishlistIds);
 wishlistRouter.post('/:productId', c.addToWishlist);

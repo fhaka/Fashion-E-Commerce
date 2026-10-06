@@ -5,10 +5,12 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { BarList, TimeSeriesChart } from '@/components/admin/charts';
 import { FilterSelect, PageHeader, Panel, Pill, StatTile, Thumb } from '@/components/admin/ui';
+import { useSite } from '@/components/layout/SiteProvider';
 import { StatusBadge, STATUS_LABEL } from '@/components/order/OrderParts';
 import { compactMoney, formatDate, useAdminQuery } from '@/lib/admin';
 import type { OrderStatus } from '@/lib/types';
 import { formatMoney } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 
 interface Overview {
   kpis: Record<'revenue' | 'orders' | 'averageOrderValue' | 'newCustomers', { value: number; change: number }>;
@@ -30,6 +32,10 @@ const RANGES = [
 export default function DashboardPage() {
   const [range, setRange] = useState('30');
   const { data, loading, error } = useAdminQuery<Overview>('/admin/stats/overview', { range });
+  const { features } = useSite();
+  // Charts, period comparison, top products and low-stock alerts are part of the Advanced plan.
+  const analytics = features.analytics;
+  const change = (v: number) => (analytics ? v : undefined);
   const period = `previous ${range} days`;
   const dayLabel = (d: string) => new Date(`${d}T00:00:00Z`).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
 
@@ -41,10 +47,10 @@ export default function DashboardPage() {
       <div className="mb-6 grid grid-cols-2 gap-4 xl:grid-cols-4">
         {data ? (
           <>
-            <StatTile label="Revenue" value={formatMoney(data.kpis.revenue.value)} change={data.kpis.revenue.change} period={period} />
-            <StatTile label="Orders" value={data.kpis.orders.value.toLocaleString('en-US')} change={data.kpis.orders.change} period={period} />
-            <StatTile label="Average order value" value={formatMoney(data.kpis.averageOrderValue.value)} change={data.kpis.averageOrderValue.change} period={period} />
-            <StatTile label="New customers" value={data.kpis.newCustomers.value.toLocaleString('en-US')} change={data.kpis.newCustomers.change} period={period} />
+            <StatTile label="Revenue" value={formatMoney(data.kpis.revenue.value)} change={change(data.kpis.revenue.change)} period={period} />
+            <StatTile label="Orders" value={data.kpis.orders.value.toLocaleString('en-US')} change={change(data.kpis.orders.change)} period={period} />
+            <StatTile label="Average order value" value={formatMoney(data.kpis.averageOrderValue.value)} change={change(data.kpis.averageOrderValue.change)} period={period} />
+            <StatTile label="New customers" value={data.kpis.newCustomers.value.toLocaleString('en-US')} change={change(data.kpis.newCustomers.change)} period={period} />
           </>
         ) : (
           [0, 1, 2, 3].map((i) => <div key={i} className="skeleton h-28" />)
@@ -52,6 +58,7 @@ export default function DashboardPage() {
       </div>
 
       <div className={loading && data ? 'opacity-60 transition-opacity' : 'transition-opacity'}>
+        {analytics && (
         <div className="mb-6 grid gap-6 xl:grid-cols-3">
           <div className="xl:col-span-2">
             {data ? (
@@ -77,11 +84,12 @@ export default function DashboardPage() {
             <div className="skeleton h-80" />
           )}
         </div>
+        )}
 
-        <div className="grid gap-6 xl:grid-cols-3">
+        <div className={cn('grid gap-6', analytics && 'xl:grid-cols-3')}>
           <Panel
             title="Recent orders"
-            className="xl:col-span-2"
+            className={analytics ? 'xl:col-span-2' : undefined}
             bodyClassName="p-0"
             actions={
               <Link href="/admin/orders" className="flex items-center gap-1 text-xs text-stone-600 hover:text-ink">
@@ -105,8 +113,9 @@ export default function DashboardPage() {
             </ul>
           </Panel>
 
+          {(analytics || features.reviews) && (
           <div className="space-y-6">
-            {data && data.pendingReviews > 0 && (
+            {features.reviews && data && data.pendingReviews > 0 && (
               <Link href="/admin/reviews" className="flex items-center justify-between border border-camel/40 bg-camel/10 px-5 py-4 text-sm hover:bg-camel/15">
                 <span>
                   <strong className="font-medium">{data.pendingReviews}</strong> review{data.pendingReviews === 1 ? '' : 's'} awaiting moderation
@@ -114,6 +123,7 @@ export default function DashboardPage() {
                 <ArrowRight className="h-4 w-4" />
               </Link>
             )}
+            {analytics && (
             <Panel title="Top products" bodyClassName="p-0">
               <ul className="divide-y divide-stone-200">
                 {(data?.topProducts ?? []).map((p, i) => (
@@ -129,6 +139,8 @@ export default function DashboardPage() {
                 {data && data.topProducts.length === 0 && <li className="px-5 py-6 text-center text-sm text-stone-500">No sales in this period.</li>}
               </ul>
             </Panel>
+            )}
+            {analytics && (
             <Panel
               title={
                 <span className="flex items-center gap-2">
@@ -157,7 +169,9 @@ export default function DashboardPage() {
                 {data && data.lowStock.length === 0 && <li className="px-5 py-6 text-center text-sm text-stone-500">All variants are well stocked.</li>}
               </ul>
             </Panel>
+            )}
           </div>
+          )}
         </div>
       </div>
     </>

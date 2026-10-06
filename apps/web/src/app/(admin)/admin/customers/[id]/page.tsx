@@ -5,11 +5,12 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useState } from 'react';
 import { ConfirmDialog, PageHeader, Panel, Pill, StatTile } from '@/components/admin/ui';
+import { useSite } from '@/components/layout/SiteProvider';
 import { AddressBlock, StatusBadge } from '@/components/order/OrderParts';
 import { Button } from '@/components/ui/Button';
 import { Stars } from '@/components/ui/Stars';
-import { api, ApiRequestError } from '@/lib/api';
 import { formatDate, useAdminQuery } from '@/lib/admin';
+import { api, ApiRequestError } from '@/lib/api';
 import type { Address, OrderStatus } from '@/lib/types';
 import { formatMoney } from '@/lib/utils';
 import { useAuth } from '@/stores/auth';
@@ -33,6 +34,7 @@ interface Customer {
 }
 
 export default function CustomerPage() {
+  const { features } = useSite();
   const { id } = useParams<{ id: string }>();
   const me = useAuth((s) => s.user);
   const { data: c, setData, error } = useAdminQuery<Customer>(`/admin/customers/${id}`);
@@ -98,7 +100,7 @@ export default function CustomerPage() {
               {c.orders.length === 0 && <li className="px-5 py-8 text-center text-sm text-stone-500">No orders yet.</li>}
             </ul>
           </Panel>
-          {c.reviews.length > 0 && (
+          {features.reviews && c.reviews.length > 0 && (
             <Panel title="Reviews" bodyClassName="p-0">
               <ul className="divide-y divide-stone-200">
                 {c.reviews.map((r) => (

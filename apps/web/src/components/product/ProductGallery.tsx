@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import { ChevronLeft, ChevronRight, Maximize2, Play } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { cn, EASE } from '@/lib/utils';
+import { useFeature } from '../layout/SiteProvider';
 import { Img } from '../ui/Img';
 import { Modal } from '../ui/Modal';
 
@@ -16,7 +17,9 @@ export interface GalleryImage {
 type Slide = { kind: 'image'; image: GalleryImage } | { kind: 'video'; url: string };
 
 export function ProductGallery({ images, videoUrl, name }: { images: GalleryImage[]; videoUrl?: string | null; name: string }) {
-  const slides: Slide[] = [...images.map((image) => ({ kind: 'image' as const, image })), ...(videoUrl ? [{ kind: 'video' as const, url: videoUrl }] : [])];
+  // Zoom, the full-screen lightbox and product video are part of the Premium plan.
+  const media = useFeature('productMedia');
+  const slides: Slide[] = [...images.map((image) => ({ kind: 'image' as const, image })), ...(videoUrl && media ? [{ kind: 'video' as const, url: videoUrl }] : [])];
   const [index, setIndex] = useState(0);
   const [lightbox, setLightbox] = useState(false);
   const scroller = useRef<HTMLDivElement>(null);
@@ -69,7 +72,11 @@ export function ProductGallery({ images, videoUrl, name }: { images: GalleryImag
               transition={{ duration: 0.8, ease: EASE }}
             >
               {current?.kind === 'image' ? (
-                <ZoomImage image={current.image} priority={index === 0} onOpen={() => setLightbox(true)} />
+                media ? (
+                  <ZoomImage image={current.image} priority={index === 0} onOpen={() => setLightbox(true)} />
+                ) : (
+                  <Img src={current.image.url} alt={current.image.alt} fill priority={index === 0} sizes="(min-width: 1024px) 50vw, 100vw" quality={85} className="object-cover" />
+                )
               ) : current ? (
                 <video src={current.url} className="h-full w-full object-cover" autoPlay muted loop playsInline controls />
               ) : null}
@@ -101,9 +108,13 @@ export function ProductGallery({ images, videoUrl, name }: { images: GalleryImag
           {slides.map((s, i) => (
             <div key={s.kind === 'image' ? s.image.id : 'video'} className="relative aspect-[4/5] w-full shrink-0 snap-center bg-stone-100">
               {s.kind === 'image' ? (
-                <button type="button" className="absolute inset-0" onClick={() => setLightbox(true)} aria-label="Open full screen">
+                media ? (
+                  <button type="button" className="absolute inset-0" onClick={() => setLightbox(true)} aria-label="Open full screen">
+                    <Img src={s.image.url} alt={s.image.alt} fill priority={i === 0} sizes="100vw" className="object-cover" />
+                  </button>
+                ) : (
                   <Img src={s.image.url} alt={s.image.alt} fill priority={i === 0} sizes="100vw" className="object-cover" />
-                </button>
+                )
               ) : (
                 <video src={s.url} className="h-full w-full object-cover" muted loop playsInline controls />
               )}
@@ -119,7 +130,7 @@ export function ProductGallery({ images, videoUrl, name }: { images: GalleryImag
         )}
       </div>
 
-      <Lightbox open={lightbox} onClose={() => setLightbox(false)} images={images} start={current?.kind === 'image' ? images.indexOf(current.image) : 0} name={name} />
+      {media && <Lightbox open={lightbox} onClose={() => setLightbox(false)} images={images} start={current?.kind === 'image' ? images.indexOf(current.image) : 0} name={name} />}
     </div>
   );
 }

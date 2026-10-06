@@ -44,6 +44,7 @@ nano .env.production
 ```
 
 Fill in at least:
+- `PLAN`: the client's package, `basic`, `advanced` or `premium` ([PLANS.md](PLANS.md))
 - `DOMAIN` (e.g. `shop.example.com`)
 - `STORE_CURRENCY` and `STORE_LOCALE` (e.g. `EUR` and `fr-FR`). These are permanent once products exist, because prices are stored in that currency.
 - `POSTGRES_PASSWORD`, `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET` and `REVALIDATE_SECRET`. Generate each one separately with
@@ -106,6 +107,7 @@ dc run --rm -e SEED_ADMIN_PASSWORD='choose-a-strong-one-1' migrate npm run db:se
 |---|---|
 | Logs (follow) | `dc logs -f api web` |
 | Restart one service | `dc restart api` |
+| Change the client's plan | edit `PLAN` in `.env.production`, then `dc up -d api` (no rebuild; data is kept) |
 | Deploy a new version | `git pull && dc up -d --build` (new migrations run automatically) |
 | Stop everything | `dc down` (data volumes are kept; never add `-v` on production) |
 | Database shell | `dc exec postgres psql -U maison -d maison` |

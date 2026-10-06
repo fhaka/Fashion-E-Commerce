@@ -9,6 +9,7 @@ import type { ProductDetail } from '@/lib/types';
 import { cn, EASE, formatMoney } from '@/lib/utils';
 import { useCart } from '@/stores/cart';
 import { useRecentlyViewed } from '@/stores/recentlyViewed';
+import { useFeature } from '../layout/SiteProvider';
 import { AccordionItem } from '../ui/Accordion';
 import { Breadcrumbs } from '../ui/Breadcrumbs';
 import { Button } from '../ui/Button';
@@ -24,6 +25,8 @@ export function ProductView({ product }: { product: ProductDetail }) {
   const add = useCart((s) => s.add);
   const pending = useCart((s) => s.pending);
   const track = useRecentlyViewed((s) => s.track);
+  const showReviews = useFeature('reviews');
+  const sizeGuide = useFeature('sizeGuide');
 
   const [colorId, setColorId] = useState(product.colors[0]?.id);
   const [sizeId, setSizeId] = useState<string | null>(() => (product.sizes.length === 1 ? product.sizes[0].id : null));
@@ -144,7 +147,7 @@ export function ProductView({ product }: { product: ProductDetail }) {
                   <Price price={variant?.price ?? product.price} compareAtPrice={product.compareAtPrice} showDiscount className="text-lg" />
                 </motion.div>
               </AnimatePresence>
-              {product.ratingCount > 0 && (
+              {showReviews && product.ratingCount > 0 && (
                 <a href="#reviews" className="flex items-center gap-2 text-xs text-stone-600 hover:text-ink">
                   <Stars rating={product.ratingAvg} />
                   <span className="underline underline-offset-4">
@@ -193,9 +196,11 @@ export function ProductView({ product }: { product: ProductDetail }) {
                   <legend className="text-[0.7rem] tracking-[0.16em] uppercase">
                     Size{sizeLabel && <span className="tracking-normal text-stone-600 normal-case"> — {sizeLabel}</span>}
                   </legend>
-                  <button type="button" onClick={() => setGuideOpen(true)} className="flex items-center gap-1.5 text-xs text-stone-600 underline-offset-4 hover:underline">
-                    <Ruler className="h-3.5 w-3.5" strokeWidth={1.3} /> Size guide
-                  </button>
+                  {sizeGuide && (
+                    <button type="button" onClick={() => setGuideOpen(true)} className="flex items-center gap-1.5 text-xs text-stone-600 underline-offset-4 hover:underline">
+                      <Ruler className="h-3.5 w-3.5" strokeWidth={1.3} /> Size guide
+                    </button>
+                  )}
                 </div>
                 <div className={cn('grid grid-cols-5 gap-2 rounded-sm transition-shadow', sizeError && 'ring-1 ring-sale ring-offset-4')}>
                   {product.sizes.map((s) => {

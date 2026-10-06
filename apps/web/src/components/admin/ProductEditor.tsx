@@ -5,14 +5,14 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useMemo, useRef, useState } from 'react';
 import { adminProductSchema } from '@maison/shared';
-import { api, ApiRequestError } from '@/lib/api';
 import { toCents, toDollars, useAdminQuery } from '@/lib/admin';
+import { api, ApiRequestError } from '@/lib/api';
 import { cn, STORE_CURRENCY } from '@/lib/utils';
 import { toast } from '@/stores/toast';
+import { useSite } from '../layout/SiteProvider';
 import { Button } from '../ui/Button';
 import { Checkbox, FormError, Input, Select, zodFieldErrors } from '../ui/Field';
 import { ConfirmDialog, PageHeader, Panel, Pill, TextArea, Toggle } from './ui';
-import { useSite } from '../layout/SiteProvider';
 
 /* ───────────────────────── Types ───────────────────────── */
 
@@ -101,7 +101,7 @@ function fromProduct(p?: AdminProduct) {
 /* ───────────────────────── Editor ───────────────────────── */
 
 export function ProductEditor({ product }: { product?: AdminProduct }) {
-  const { storeName } = useSite();
+  const { storeName, features } = useSite();
   const router = useRouter();
   const isNew = !product;
   const [form, setForm] = useState(() => fromProduct(product));
@@ -132,7 +132,7 @@ export function ProductEditor({ product }: { product?: AdminProduct }) {
   const { data: sizes } = useAdminQuery<Size[]>('/admin/sizes');
   const { data: colors } = useAdminQuery<Color[]>('/admin/colors');
   const { data: categories } = useAdminQuery<Category[]>('/admin/categories');
-  const { data: collections } = useAdminQuery<Collection[]>('/admin/collections');
+  const { data: collections } = useAdminQuery<Collection[]>(features.collections ? '/admin/collections' : null);
 
   const set = <K extends keyof typeof form>(k: K, v: (typeof form)[K]) => setForm((f) => ({ ...f, [k]: v }));
 
@@ -337,6 +337,7 @@ export function ProductEditor({ product }: { product?: AdminProduct }) {
                 <option value="MEN">Men</option>
                 <option value="UNISEX">Unisex</option>
               </Select>
+              {features.collections && (
               <fieldset>
                 <legend className="mb-2 text-[0.68rem] tracking-[0.14em] uppercase">Collections</legend>
                 <div className="space-y-2">
@@ -350,6 +351,7 @@ export function ProductEditor({ product }: { product?: AdminProduct }) {
                   ))}
                 </div>
               </fieldset>
+              )}
             </div>
           </Panel>
 
@@ -373,9 +375,11 @@ export function ProductEditor({ product }: { product?: AdminProduct }) {
             </ul>
           </Panel>
 
-          <Panel title="Video">
-            <Input label="Video URL (MP4)" value={form.videoUrl} onChange={(e) => set('videoUrl', e.target.value)} optional hint="Plays as the last item in the gallery." error={err('videoUrl')} />
-          </Panel>
+          {features.productMedia && (
+            <Panel title="Video">
+              <Input label="Video URL (MP4)" value={form.videoUrl} onChange={(e) => set('videoUrl', e.target.value)} optional hint="Plays as the last item in the gallery." error={err('videoUrl')} />
+            </Panel>
+          )}
 
           {!isNew && (
             <Panel title="Danger zone">

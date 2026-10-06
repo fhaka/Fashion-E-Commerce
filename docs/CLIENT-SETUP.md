@@ -10,6 +10,7 @@ time to add products.
 
 | Item | Used for |
 |---|---|
+| Their package: Basic, Advanced or Premium ([PLANS.md](PLANS.md)) | `PLAN` setting |
 | Store name, legal/company name, tagline (5–8 words), one-sentence description | Header, page titles, emails, legal pages, Google and social previews |
 | Logo (transparent PNG, at least 400 px wide) or "use the name as wordmark" | Header, checkout, emails |
 | Three brand colours: dark (text), light (background), accent | The whole site and emails |
@@ -30,6 +31,7 @@ Follow [DEPLOYMENT.md](DEPLOYMENT.md) (Docker on one server, or managed platform
 values in `.env.production`:
 
 ```bash
+PLAN=advanced             # basic | advanced | premium — the package they bought
 DOMAIN=shop.clientdomain.com
 STORE_CURRENCY=EUR        # ISO code with 2 decimals: USD, EUR, GBP, CHF, ALL…
 STORE_LOCALE=fr-FR        # number/date format: en-US, en-GB, fr-FR, de-DE, it-IT, sq-AL…
@@ -120,6 +122,7 @@ Use Cloudinary in production so product images are resized and served from a CDN
 
 | They can (admin) | You change it (configuration / code) |
 |---|---|
+| See their package and what an upgrade adds (Settings → Your plan) | Their plan (`PLAN`; restart the API; all data is kept) |
 | Everything in Settings and Pages, all catalogue content, banners, coupons, orders | Currency and locale, domain, payment and email providers |
 | Brand colours and logo | Fonts and layout (code: `apps/web/src/app/layout.tsx`, `globals.css`) |
 | Announcements, highlights, brand-story figures | Copy inside the storefront UI (e.g. button labels) |

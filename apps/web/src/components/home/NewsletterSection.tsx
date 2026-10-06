@@ -19,7 +19,7 @@ export function NewsletterSection({ image }: { image?: string }) {
             <SplitText id="newsletter-heading" text="First access, quietly delivered" className="font-display text-display-sm font-light" />
             <Reveal delay={0.2}>
               <p className="mt-6 text-stone-600">
-                Join our list for early access to new collections, private sale invitations and 10% off your first order.
+                Join our list for early access to new collections and private sale invitations.
               </p>
             </Reveal>
             <Reveal delay={0.3}>

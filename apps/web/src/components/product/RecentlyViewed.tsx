@@ -5,10 +5,11 @@ import { api } from '@/lib/api';
 import type { ProductCard as Card } from '@/lib/types';
 import { useRecentlyViewed } from '@/stores/recentlyViewed';
 import { ProductRail } from '../home/ProductRail';
+import { useFeature } from '../layout/SiteProvider';
 import { Reveal } from '../motion';
 
 /** "Recently viewed" rail, backed by localStorage ids and the batch endpoint. */
-export function RecentlyViewed({ excludeId, title = 'Recently viewed' }: { excludeId?: string; title?: string }) {
+function RecentlyViewedInner({ excludeId, title = 'Recently viewed' }: { excludeId?: string; title?: string }) {
   const { ids, hydrate } = useRecentlyViewed();
   const [products, setProducts] = useState<Card[]>([]);
 
@@ -39,4 +40,9 @@ export function RecentlyViewed({ excludeId, title = 'Recently viewed' }: { exclu
       <ProductRail products={products} label={title} />
     </section>
   );
+}
+
+/** Rendered only when the store plan includes "recommendations". */
+export function RecentlyViewed(props: { excludeId?: string; title?: string }) {
+  return useFeature('recommendations') ? <RecentlyViewedInner {...props} /> : null;
 }

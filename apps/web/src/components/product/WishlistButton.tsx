@@ -4,8 +4,9 @@ import { AnimatePresence, motion } from 'motion/react';
 import { Heart } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useWishlist } from '@/stores/wishlist';
+import { useFeature } from '../layout/SiteProvider';
 
-export function WishlistButton({ productId, name, className, size = 'md' }: { productId: string; name: string; className?: string; size?: 'md' | 'lg' }) {
+function WishlistButtonInner({ productId, name, className, size = 'md' }: { productId: string; name: string; className?: string; size?: 'md' | 'lg' }) {
   const saved = useWishlist((s) => s.ids.includes(productId));
   const toggle = useWishlist((s) => s.toggle);
 
@@ -40,4 +41,9 @@ export function WishlistButton({ productId, name, className, size = 'md' }: { pr
       </AnimatePresence>
     </button>
   );
+}
+
+/** Rendered only when the store plan includes "wishlist". */
+export function WishlistButton(props: { productId: string; name: string; className?: string; size?: 'md' | 'lg' }) {
+  return useFeature('wishlist') ? <WishlistButtonInner {...props} /> : null;
 }

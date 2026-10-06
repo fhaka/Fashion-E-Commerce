@@ -1,14 +1,15 @@
 'use client';
 
+import { Check, Lock } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
-import { contrastRatio, SOCIAL_NETWORKS, storeSettingsSchema, themeColors } from '@maison/shared';
+import { contrastRatio, FEATURES, PLAN_NAMES, PLANS, SOCIAL_NETWORKS, storeSettingsSchema, themeColors, type Feature, type Plan } from '@maison/shared';
 import { ImageField, PageHeader, Panel, TextArea, Toggle } from '@/components/admin/ui';
-import { useDemo } from '@/components/layout/SiteProvider';
+import { useDemo, useSite } from '@/components/layout/SiteProvider';
 import { Button } from '@/components/ui/Button';
 import { FormError, Input, zodFieldErrors } from '@/components/ui/Field';
-import { api, ApiRequestError } from '@/lib/api';
 import { toCents, toDollars, useAdminQuery } from '@/lib/admin';
+import { api, ApiRequestError } from '@/lib/api';
 import type { SiteSettings } from '@/lib/types';
 import { cn, STORE_CURRENCY, STORE_LOCALE } from '@/lib/utils';
 import { toast } from '@/stores/toast';
@@ -114,6 +115,7 @@ function toPayload(d: Draft) {
 export default function SettingsPage() {
   const router = useRouter();
   const demo = useDemo();
+  const { plan, features } = useSite();
   const { data, error } = useAdminQuery<Settings>('/admin/settings');
   const [draft, setDraft] = useState<Draft | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -220,6 +222,7 @@ export default function SettingsPage() {
         <Panel title="Home page & announcements" bodyClassName="space-y-5 p-6">
           <TextArea label="Announcement bar" value={draft.announcements} onChange={(v) => set('announcements', v)} rows={3} error={errors.announcements} hint="One message per line (up to 5). They rotate at the top of every page; leave empty to hide the bar." />
           <TextArea label="Highlights" value={draft.highlights} onChange={(v) => set('highlights', v)} rows={4} error={errors.highlights} hint="One per line (up to 8). Scrolls under the home page hero." />
+          {features.editorialHome && (
           <fieldset>
             <legend className="mb-2 block text-[0.68rem] tracking-[0.14em] uppercase">Brand story figures</legend>
             <p className="mb-3 text-xs text-stone-500">Up to three short facts in the brand story section, e.g. “2009 / Founded in Paris”.</p>
@@ -245,6 +248,7 @@ export default function SettingsPage() {
             </div>
             {errors.storyStats && <p className="mt-2 text-xs text-sale">{errors.storyStats}</p>}
           </fieldset>
+          )}
         </Panel>
 
         <Panel title="Social links" bodyClassName="space-y-5 p-6">
@@ -271,6 +275,8 @@ export default function SettingsPage() {
           </div>
           <ThemePreview ink={draft.themeInk} bone={draft.themeBone} accent={draft.themeAccent} name={draft.storeName || 'Store'} />
         </Panel>
+
+        <PlanPanel plan={plan} />
       </div>
 
       <div className="flex justify-end">
@@ -337,5 +343,33 @@ function ThemePreview({ ink, bone, accent, name }: { ink: string; bone: string; 
         <span className="text-xs opacity-70">Text contrast {ratio.toFixed(1)}:1</span>
       </div>
     </div>
+  );
+}
+
+/** What the store's package includes, and what the next ones add. */
+function PlanPanel({ plan }: { plan: Plan }) {
+  const byPlan = (p: Plan) => (Object.keys(FEATURES) as Feature[]).filter((f) => FEATURES[f].plan === p);
+  const current = PLANS.indexOf(plan);
+  return (
+    <Panel title={`Your plan: ${PLAN_NAMES[plan]}`} className="xl:col-span-2" bodyClassName="grid gap-8 p-6 md:grid-cols-3">
+      {PLANS.map((p, i) => {
+        const included = i <= current;
+        return (
+          <div key={p}>
+            <p className={cn('mb-1 font-display text-2xl', !included && 'text-stone-500')}>{PLAN_NAMES[p]}</p>
+            <p className="mb-4 text-xs text-stone-500">{i === 0 ? 'Complete shop, checkout, accounts and admin, plus:' : `Everything in ${PLAN_NAMES[PLANS[i - 1]]}, plus:`}</p>
+            <ul className="space-y-2 text-sm">
+              {byPlan(p).map((f) => (
+                <li key={f} className={cn('flex items-start gap-2', !included && 'text-stone-500')}>
+                  {included ? <Check className="mt-0.5 h-4 w-4 shrink-0 text-success" aria-label="Included" /> : <Lock className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-label="Not included" />}
+                  {FEATURES[f].label}
+                </li>
+              ))}
+            </ul>
+          </div>
+        );
+      })}
+      {current < PLANS.length - 1 && <p className="text-sm text-stone-600 md:col-span-3">To add features, ask your developer to upgrade the store plan. Your products, orders and settings stay as they are.</p>}
+    </Panel>
   );
 }

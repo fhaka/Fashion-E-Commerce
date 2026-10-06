@@ -6,6 +6,7 @@ import { ProductRail } from '@/components/home/ProductRail';
 import { SectionHeading } from '@/components/home/SectionHeading';
 import { Marquee, Stagger, StaggerItem } from '@/components/motion';
 import { ProductCard } from '@/components/product/ProductCard';
+import { JsonLd } from '@/components/ui/JsonLd';
 import { getBanners, getCategoryTree, getCollections, getProduct, getProducts } from '@/lib/catalog';
 import { getSiteSettings } from '@/lib/site';
 import { SITE_URL } from '@/lib/utils';
@@ -25,7 +26,8 @@ export default async function HomePage() {
     getProducts({ featured: true, sort: 'bestselling', limit: 1 }),
   ]);
   const settings = await getSiteSettings();
-  const spotlight = featured.data[0] ? await getProduct(featured.data[0].slug).catch(() => null) : null;
+  const { editorialHome, newsletter } = settings.features;
+  const spotlight = editorialHome && featured.data[0] ? await getProduct(featured.data[0].slug).catch(() => null) : null;
 
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -39,7 +41,7 @@ export default async function HomePage() {
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c') }} />
+      <JsonLd data={jsonLd} />
 
       {/* 1. Hero */}
       <Hero slides={heroes} />
@@ -57,8 +59,8 @@ export default async function HomePage() {
         <ProductRail products={newIn.data} label="New arrivals" />
       </section>
 
-      {/* 6. Campaign banner */}
-      <CampaignBanner banner={promos[0]} />
+      {/* 6. Campaign banner (Premium) */}
+      {editorialHome && <CampaignBanner banner={promos[0]} />}
 
       {/* 4. Best sellers */}
       <section className="container-site py-(--spacing-section)" aria-labelledby="best-heading">
@@ -75,17 +77,15 @@ export default async function HomePage() {
       {/* 5. Shop by category */}
       <ShopByCategory categories={categories} />
 
-      {/* 7. Featured product showcase */}
+      {/* 7. Featured product showcase (Premium) */}
       {spotlight && <FeaturedProduct product={spotlight} />}
 
-      {/* 8. Brand story */}
-      <BrandStory story={stories[0]} stats={settings.storyStats} />
+      {/* 8–9. Brand story and lookbook (Premium) */}
+      {editorialHome && <BrandStory story={stories[0]} stats={settings.storyStats} />}
+      {editorialHome && <Lookbook looks={looks} />}
 
-      {/* 9. Lookbook */}
-      <Lookbook looks={looks} />
-
-      {/* 10. Newsletter (11. footer is in the root layout) */}
-      <NewsletterSection image={looks[0]?.image} />
+      {/* 10. Newsletter (Advanced; 11. footer is in the root layout) */}
+      {newsletter && <NewsletterSection image={looks[0]?.image} />}
     </>
   );
 }

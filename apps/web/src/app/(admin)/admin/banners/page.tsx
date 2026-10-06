@@ -4,11 +4,12 @@ import { ArrowDown, ArrowUp, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { adminBannerSchema } from '@maison/shared';
 import { ConfirmDialog, PageHeader, Pill, Tabs, TextArea, Toggle } from '@/components/admin/ui';
+import { useSite } from '@/components/layout/SiteProvider';
 import { Button } from '@/components/ui/Button';
 import { FormError, Input, Select, zodFieldErrors } from '@/components/ui/Field';
 import { Modal } from '@/components/ui/Modal';
-import { api, ApiRequestError } from '@/lib/api';
 import { formatDate, useAdminQuery } from '@/lib/admin';
+import { api, ApiRequestError } from '@/lib/api';
 import type { Banner } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { toast } from '@/stores/toast';
@@ -27,6 +28,9 @@ const blank = (placement: Placement) => ({ title: '', subtitle: '', eyebrow: '',
 
 export default function BannersPage() {
   const [placement, setPlacement] = useState<Placement>('HERO');
+  const { features } = useSite();
+  // Campaign, brand story and lookbook sections are part of the Premium plan; the hero is in every plan.
+  const placements = PLACEMENTS.filter((p) => p.value === 'HERO' || features.editorialHome);
   const { data, reload, setData } = useAdminQuery<AdminBanner[]>('/admin/banners', { placement });
   const [draft, setDraft] = useState<(ReturnType<typeof blank> & { id?: string }) | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -111,7 +115,7 @@ export default function BannersPage() {
           </Button>
         }
       />
-      <Tabs value={placement} onChange={setPlacement} tabs={PLACEMENTS.map((p) => ({ value: p.value, label: p.label }))} />
+      {placements.length > 1 && <Tabs value={placement} onChange={setPlacement} tabs={placements.map((p) => ({ value: p.value, label: p.label }))} />}
       {!data ? (
         <div className="skeleton h-72" />
       ) : data.length === 0 ? (
@@ -177,7 +181,7 @@ export default function BannersPage() {
                 <option value="LIGHT">Dark text on light image</option>
               </Select>
               <Select label="Placement" value={draft.placement} onChange={(e) => setDraft({ ...draft, placement: e.target.value as Placement })}>
-                {PLACEMENTS.map((p) => (
+                {placements.map((p) => (
                   <option key={p.value} value={p.value}>
                     {p.label}
                   </option>

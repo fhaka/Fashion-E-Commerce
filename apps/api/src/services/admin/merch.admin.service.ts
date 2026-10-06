@@ -1,4 +1,6 @@
 import type { BannerPlacement, Prisma } from '@prisma/client';
+import { bannerPlacementAllowed } from '@maison/shared';
+import { env } from '../../config/env';
 import { prisma } from '../../db/prisma';
 import { ApiError } from '../../utils/ApiError';
 import { slugify } from '../../utils/helpers';
@@ -157,8 +159,20 @@ export async function deleteCoupon(id: string) {
 
 export const listBanners = (placement?: BannerPlacement) =>
   prisma.banner.findMany({ where: placement ? { placement } : {}, orderBy: [{ placement: 'asc' }, { sortOrder: 'asc' }] });
-export const createBanner = (input: Prisma.BannerCreateInput) => prisma.banner.create({ data: input });
-export const updateBanner = (id: string, input: Prisma.BannerUpdateInput) => prisma.banner.update({ where: { id }, data: input });
+function assertPlacementInPlan(placement: unknown) {
+  if (typeof placement === 'string' && !bannerPlacementAllowed(env.PLAN, placement)) {
+    throw ApiError.validation({ fields: { placement: 'Campaign, brand story and lookbook banners are part of the Premium plan' } }, 'This banner placement is not part of the store plan');
+  }
+}
+
+export const createBanner = (input: Prisma.BannerCreateInput) => {
+  assertPlacementInPlan(input.placement);
+  return prisma.banner.create({ data: input });
+};
+export const updateBanner = (id: string, input: Prisma.BannerUpdateInput) => {
+  assertPlacementInPlan(input.placement);
+  return prisma.banner.update({ where: { id }, data: input });
+};
 export const deleteBanner = (id: string) => prisma.banner.delete({ where: { id } });
 
 export async function reorderBanners(ids: string[]) {

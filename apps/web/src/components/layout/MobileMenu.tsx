@@ -9,10 +9,12 @@ import { useAuth } from '@/stores/auth';
 import { useUi } from '@/stores/ui';
 import { Drawer } from '../ui/Drawer';
 import type { NavItem } from './MegaMenu';
+import { useSite } from './SiteProvider';
 
 export function MobileMenu({ nav }: { nav: NavItem[] }) {
   const { menuOpen, setMenu } = useUi();
   const user = useAuth((s) => s.user);
+  const { features } = useSite();
   const [expanded, setExpanded] = useState<string | null>(null);
   const close = () => setMenu(false);
 
@@ -82,14 +84,18 @@ export function MobileMenu({ nav }: { nav: NavItem[] }) {
           <Link href={user ? '/account' : '/login'} onClick={close} className="block">
             {user ? `My account · ${user.firstName}` : 'Sign in / Register'}
           </Link>
-          <Link href="/wishlist" onClick={close} className="block">
-            Wishlist
-          </Link>
-          <Link href="/track-order" onClick={close} className="block">
-            Track an order
-          </Link>
+          {features.wishlist && (
+            <Link href="/wishlist" onClick={close} className="block">
+              Wishlist
+            </Link>
+          )}
+          {features.orderTracking && (
+            <Link href="/track-order" onClick={close} className="block">
+              Track an order
+            </Link>
+          )}
           <Link href="/contact" onClick={close} className="block">
-            Client services
+            Contact us
           </Link>
         </div>
       </nav>

@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import { z } from 'zod';
-import { isSupportedCurrency } from '@maison/shared';
+import { isPlan, isSupportedCurrency, type Plan } from '@maison/shared';
 
 const bool = z
   .enum(['true', 'false', '1', '0', ''])
@@ -57,6 +57,15 @@ const schema = z.object({
   DEMO_ADMIN_EMAIL: z.string().email().default('admin@maison.test'),
   DEMO_CUSTOMER_EMAIL: z.string().email().default('ava@maison.test'),
   DEMO_RESET_HOUR_UTC: z.coerce.number().int().min(0).max(23).default(3),
+
+  /** Client package: basic | advanced | premium. Turns features on or off everywhere (see docs/PLANS.md). */
+  PLAN: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .default('premium')
+    .refine(isPlan, 'PLAN must be basic, advanced or premium')
+    .transform((v) => v as Plan),
 
   /**
    * Shop currency (ISO 4217) and number/date locale, fixed per deployment: prices are stored

@@ -1,5 +1,5 @@
 import type { ContentPage, Prisma, StoreSettings } from '@prisma/client';
-import { CONTENT_PAGES, themeColors, type ContentPageInput, type ContentPageSlug, type ShippingMethod, type StoreSettingsInput } from '@maison/shared';
+import { CONTENT_PAGES, featureFlags, themeColors, type ContentPageInput, type ContentPageSlug, type ShippingMethod, type StoreSettingsInput } from '@maison/shared';
 import { env } from '../config/env';
 import { DEFAULT_PAGES, DEFAULT_SETTINGS } from '../content/defaults';
 import { prisma } from '../db/prisma';
@@ -56,6 +56,8 @@ export async function publicSiteSettings() {
     locale: env.STORE_LOCALE,
     reservationMinutes: env.ORDER_RESERVATION_MINUTES,
     shippingMethods: shippingOptions(s),
+    plan: env.PLAN,
+    features: featureFlags(env.PLAN),
   };
 }
 

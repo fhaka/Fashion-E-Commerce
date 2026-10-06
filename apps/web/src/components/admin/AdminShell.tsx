@@ -25,17 +25,18 @@ import {
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState, type ReactNode } from 'react';
+import type { Feature } from '@maison/shared';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/stores/auth';
-import { ButtonLink } from '../ui/Button';
 import { useSite } from '../layout/SiteProvider';
+import { ButtonLink } from '../ui/Button';
 
-const NAV: { group: string; items: { href: string; label: string; icon: typeof Package; exact?: boolean }[] }[] = [
+const NAV: { group: string; items: { href: string; label: string; icon: typeof Package; exact?: boolean; feature?: Feature }[] }[] = [
   {
     group: 'Overview',
     items: [
       { href: '/admin', label: 'Dashboard', icon: LayoutDashboard, exact: true },
-      { href: '/admin/reports', label: 'Sales reports', icon: BarChart3 },
+      { href: '/admin/reports', label: 'Sales reports', icon: BarChart3, feature: 'reports' },
     ],
   },
   {
@@ -43,7 +44,7 @@ const NAV: { group: string; items: { href: string; label: string; icon: typeof P
     items: [
       { href: '/admin/orders', label: 'Orders', icon: ShoppingBag },
       { href: '/admin/customers', label: 'Customers', icon: Users },
-      { href: '/admin/coupons', label: 'Coupons', icon: Tag },
+      { href: '/admin/coupons', label: 'Coupons', icon: Tag, feature: 'coupons' },
     ],
   },
   {
@@ -52,7 +53,7 @@ const NAV: { group: string; items: { href: string; label: string; icon: typeof P
       { href: '/admin/products', label: 'Products', icon: Package },
       { href: '/admin/featured', label: 'Featured', icon: Star },
       { href: '/admin/categories', label: 'Categories', icon: FolderTree },
-      { href: '/admin/collections', label: 'Collections', icon: Layers },
+      { href: '/admin/collections', label: 'Collections', icon: Layers, feature: 'collections' },
       { href: '/admin/attributes', label: 'Sizes & colours', icon: Palette },
       { href: '/admin/inventory', label: 'Inventory', icon: Boxes },
     ],
@@ -61,7 +62,7 @@ const NAV: { group: string; items: { href: string; label: string; icon: typeof P
     group: 'Content',
     items: [
       { href: '/admin/banners', label: 'Homepage banners', icon: ImageIcon },
-      { href: '/admin/reviews', label: 'Reviews', icon: MessageSquareQuote },
+      { href: '/admin/reviews', label: 'Reviews', icon: MessageSquareQuote, feature: 'reviews' },
       { href: '/admin/newsletter', label: 'Newsletter & messages', icon: Mail },
       { href: '/admin/pages', label: 'Pages', icon: FileText },
     ],
@@ -73,7 +74,7 @@ const NAV: { group: string; items: { href: string; label: string; icon: typeof P
 ];
 
 export function AdminShell({ children }: { children: ReactNode }) {
-  const { storeName } = useSite();
+  const { storeName, features } = useSite();
   const { user, status, logout } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
@@ -108,7 +109,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
         <div key={g.group}>
           <p className="mb-2 px-3 text-[0.62rem] tracking-[0.18em] text-bone/40 uppercase">{g.group}</p>
           <ul className="space-y-0.5">
-            {g.items.map((item) => {
+            {g.items.filter((item) => !item.feature || features[item.feature]).map((item) => {
               const active = item.exact ? pathname === item.href : pathname === item.href || pathname.startsWith(`${item.href}/`);
               const Icon = item.icon;
               return (
@@ -119,7 +120,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
                     className={cn('flex items-center gap-3 px-3 py-2 text-sm transition-colors', active ? 'bg-bone/10 text-bone' : 'text-bone/65 hover:bg-bone/5 hover:text-bone')}
                   >
                     <Icon className="h-4 w-4 shrink-0" strokeWidth={1.5} />
-                    {item.label}
+                    {item.href === '/admin/newsletter' && !features.newsletter ? 'Messages' : item.label}
                   </Link>
                 </li>
               );

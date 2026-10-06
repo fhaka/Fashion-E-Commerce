@@ -1,6 +1,7 @@
 'use client';
 
 import { createContext, useContext, type ReactNode } from 'react';
+import type { Feature } from '@maison/shared';
 import type { SiteConfig } from '@/lib/types';
 
 /** Store settings and demo info for client components (server components use lib/site.ts). */
@@ -17,4 +18,7 @@ function useSiteConfig() {
 }
 
 export const useSite = () => useSiteConfig().settings;
+
+/** Whether the deployment's plan includes a feature (client components). */
+export const useFeature = (feature: Feature) => useSiteConfig().settings.features[feature] ?? true;
 export const useDemo = () => useSiteConfig().demo;

@@ -5,10 +5,11 @@ import { Reveal } from '@/components/motion';
 import { ProductView } from '@/components/product/ProductView';
 import { RecentlyViewed } from '@/components/product/RecentlyViewed';
 import { Reviews } from '@/components/product/Reviews';
+import { JsonLd } from '@/components/ui/JsonLd';
 import { ApiRequestError, api } from '@/lib/api';
 import { getProduct } from '@/lib/catalog';
-import type { ProductCard } from '@/lib/types';
 import { getSiteSettings } from '@/lib/site';
+import type { ProductCard } from '@/lib/types';
 import { SITE_URL, STORE_CURRENCY } from '@/lib/utils';
 
 export const revalidate = 60;
@@ -50,8 +51,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function ProductPage({ params }: Props) {
   const { slug } = await params;
   const product = await load(slug);
-  const related = await api<ProductCard[]>(`/products/${slug}/related`, { revalidate: 300 }).catch(() => [] as ProductCard[]);
   const settings = await getSiteSettings();
+  const related = settings.features.recommendations ? await api<ProductCard[]>(`/products/${slug}/related`, { revalidate: 300 }).catch(() => [] as ProductCard[]) : [];
 
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -71,14 +72,14 @@ export default async function ProductPage({ params }: Props) {
       availability: product.inStock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
       url: `${SITE_URL}/product/${product.slug}`,
     },
-    ...(product.ratingCount > 0
+    ...(product.ratingCount > 0 && settings.features.reviews
       ? { aggregateRating: { '@type': 'AggregateRating', ratingValue: product.ratingAvg, reviewCount: product.ratingCount } }
       : {}),
   };
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c') }} />
+      <JsonLd data={jsonLd} />
       <ProductView product={product} />
       <Reviews product={product} />
       {related.length > 0 && (

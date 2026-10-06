@@ -1,6 +1,7 @@
 import type { OrderStatus, Prisma, ReviewStatus, Role } from '@prisma/client';
 import { env } from '../../config/env';
 import { prisma } from '../../db/prisma';
+import { hasFeature } from '../../middleware/plan';
 import { sendBrandedEmail } from '../../providers/email/branded';
 import { ApiError } from '../../utils/ApiError';
 import { pageMeta, paginate } from '../../utils/helpers';
@@ -125,7 +126,7 @@ export async function updateOrderStatus(
     },
   });
 
-  if (input.status === 'SHIPPED' || input.status === 'DELIVERED') {
+  if ((input.status === 'SHIPPED' || input.status === 'DELIVERED') && hasFeature('shippingEmails')) {
     const track = { label: 'Track your order', url: `${env.WEB_URL}/track-order?orderNumber=${order.orderNumber}` };
     void sendBrandedEmail(order.email, (s) =>
       input.status === 'SHIPPED'

@@ -3,7 +3,8 @@
 A full-stack, white-label fashion store: an editorial storefront, a complete checkout, customer
 accounts and an admin dashboard for running the shop. "Maison" is the demo brand: each client's
 shop gets its own name, logo, colours, currency, shipping and tax rules and pages from the admin,
-with no code changes (see [docs/CLIENT-SETUP.md](docs/CLIENT-SETUP.md)).
+with no code changes (see [docs/CLIENT-SETUP.md](docs/CLIENT-SETUP.md)). It is sold in three packages,
+**Basic, Advanced and Premium**, switched by one `PLAN` setting (see [docs/PLANS.md](docs/PLANS.md)).
 
 **Stack:** Next.js 16 · React 19 · Tailwind CSS v4 · Motion · Express 5 · PostgreSQL 16 ·
 Prisma 6 · JWT auth · Stripe (with a built-in demo mode) · Cloudinary (or local disk)
@@ -173,6 +174,7 @@ with the placeholder JWT secrets.
 | `CLOUDINARY_*` | optional | Enables Cloudinary; otherwise uploads go to `apps/api/uploads` |
 | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `EMAIL_FROM` | prod | Outgoing email via any SMTP provider; without `SMTP_HOST`, emails are printed to the API log |
 | `ORDER_RESERVATION_MINUTES` | optional | How long an unpaid order holds stock (default 30) |
+| `PLAN` | per shop | `basic`, `advanced` or `premium` (default). Turns package features on or off everywhere; see [docs/PLANS.md](docs/PLANS.md) |
 | `STORE_CURRENCY`, `STORE_LOCALE` | per shop | Shop currency (2-decimal ISO code, e.g. `EUR`) and number format (e.g. `fr-FR`); fixed once products exist |
 
 **Web: `apps/web/.env.local`**
@@ -241,8 +243,8 @@ npm run db:up
 npm test
 ```
 
-There are 134 API integration tests, covering auth, the catalogue, cart, checkout and payments
-(including stock races), admin, account, store settings and pages, and demo mode. They run against a separate `maison_test` database
+There are 166 API integration tests, covering auth, the catalogue, cart, checkout and payments
+(including stock races), admin, account, store settings and pages, plan packages, and demo mode. They run against a separate `maison_test` database
 (your `DATABASE_URL` name plus `_test`, or `TEST_DATABASE_URL`), which is migrated and re-seeded before every run. The
 setup refuses to touch any database whose name doesn't end in `_test`.
 

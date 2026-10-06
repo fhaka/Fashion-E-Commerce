@@ -1,12 +1,12 @@
 'use client';
 
-import { AnimatePresence, motion, useReducedMotion, useScroll, useTransform } from 'motion/react';
+import { AnimatePresence, motion, useScroll, useTransform } from 'motion/react';
 import { ArrowDown } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Banner } from '@/lib/types';
 import { cn, EASE } from '@/lib/utils';
 import { useUi } from '@/stores/ui';
-import { SplitText } from '../motion';
+import { SplitText, useStaticMotion } from '../motion';
 import { ButtonLink } from '../ui/Button';
 import { Img } from '../ui/Img';
 
@@ -15,7 +15,7 @@ const SLIDE_MS = 7000;
 export function Hero({ slides }: { slides: Banner[] }) {
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
-  const reduce = useReducedMotion();
+  const reduce = useStaticMotion();
   const ref = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] });
   const contentY = useTransform(scrollYProgress, [0, 1], ['0%', reduce ? '0%' : '35%']);

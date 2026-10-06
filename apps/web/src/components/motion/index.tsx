@@ -3,6 +3,18 @@
 import { motion, useInView, useReducedMotion, useScroll, useTransform, type Variants } from 'motion/react';
 import { useRef, type ReactNode } from 'react';
 import { cn, EASE } from '@/lib/utils';
+import { useFeature } from '../layout/SiteProvider';
+
+/**
+ * Decorative motion (reveals, split headlines, parallax, page transitions) is part of the
+ * Premium plan. Without it, or when the visitor prefers reduced motion, everything renders
+ * in its final state.
+ */
+export function useStaticMotion() {
+  const reduce = useReducedMotion();
+  const motionDesign = useFeature('motion');
+  return !!reduce || !motionDesign;
+}
 
 /* ───────────────────────── Reveal ───────────────────────── */
 
@@ -24,7 +36,7 @@ export function Reveal({
   as?: 'div' | 'section' | 'li' | 'span' | 'p' | 'h2';
   amount?: number;
 }) {
-  const reduce = useReducedMotion();
+  const reduce = useStaticMotion();
   const Comp = motion[as] as typeof motion.div;
   return (
     <Comp
@@ -63,7 +75,7 @@ export function Stagger({
   delay?: number;
   as?: 'div' | 'ul';
 }) {
-  const reduce = useReducedMotion();
+  const reduce = useStaticMotion();
   const Comp = motion[as] as typeof motion.div;
   return (
     <Comp
@@ -111,7 +123,7 @@ export function SplitText({
   /** When false the animation plays on mount (e.g. hero) instead of on scroll. */
   inView?: boolean;
 }) {
-  const reduce = useReducedMotion();
+  const reduce = useStaticMotion();
   const Comp = motion[as] as typeof motion.h2;
   const words = text.split(' ');
   const trigger = inView ? { whileInView: 'show', viewport: { once: true, amount: 0.5 } } : { animate: 'show' };
@@ -137,7 +149,7 @@ export function SplitText({
 /** Moves its child vertically relative to scroll for a subtle depth effect. */
 export function Parallax({ children, className, offset = 80 }: { children: ReactNode; className?: string; offset?: number }) {
   const ref = useRef<HTMLDivElement>(null);
-  const reduce = useReducedMotion();
+  const reduce = useStaticMotion();
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] });
   const y = useTransform(scrollYProgress, [0, 1], reduce ? [0, 0] : [-offset, offset]);
   return (
@@ -153,7 +165,7 @@ export function Parallax({ children, className, offset = 80 }: { children: React
 
 /** A curtain that wipes away to reveal an image as it enters the viewport. */
 export function ImageReveal({ children, className, delay = 0 }: { children: ReactNode; className?: string; delay?: number }) {
-  const reduce = useReducedMotion();
+  const reduce = useStaticMotion();
   // Observe the unclipped wrapper: an element clipped to nothing never reports as intersecting.
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, amount: 0.2 });

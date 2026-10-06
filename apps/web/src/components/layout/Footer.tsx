@@ -1,16 +1,19 @@
 import Link from 'next/link';
+import type { Feature } from '@maison/shared';
 import type { CategoryNode, SiteSettings } from '@/lib/types';
 import { NewsletterForm } from '../ui/NewsletterForm';
 
-const help = [
-  { label: 'Client services', href: '/contact' },
-  { label: 'Track an order', href: '/track-order' },
+type FooterLink = { label: string; href: string; feature?: Feature };
+
+const help: FooterLink[] = [
+  { label: 'Contact us', href: '/contact' },
+  { label: 'Track an order', href: '/track-order', feature: 'orderTracking' },
   { label: 'Shipping & returns', href: '/shipping-returns' },
   { label: 'My account', href: '/account' },
 ];
-const house = [
+const house: FooterLink[] = [
   { label: 'Our story', href: '/about' },
-  { label: 'Collections', href: '/collections' },
+  { label: 'Collections', href: '/collections', feature: 'collections' },
   { label: 'Privacy policy', href: '/privacy' },
   { label: 'Terms of sale', href: '/terms' },
 ];
@@ -28,6 +31,7 @@ export function Footer({ categories, settings }: { categories: CategoryNode[]; s
     .filter((e): e is [string, string] => !!e[1])
     .map(([network, href]) => ({ label: SOCIAL_LABELS[network] ?? network, href }));
   const name = settings.storeName.toUpperCase();
+  const inPlan = (links: FooterLink[]) => links.filter((l) => !l.feature || settings.features[l.feature]);
   const shop = [
     { label: 'New arrivals', href: '/shop?isNew=true' },
     ...categories.map((c) => ({ label: c.name, href: `/category/${c.slug}` })),
@@ -38,23 +42,33 @@ export function Footer({ categories, settings }: { categories: CategoryNode[]; s
     <footer className="bg-ink text-bone">
       <div className="container-site pt-20 pb-10 lg:pt-28">
         <div className="grid gap-16 lg:grid-cols-12">
-          <div className="lg:col-span-5">
-            <p className="font-display text-4xl leading-tight sm:text-5xl">
-              Join our
-              <br />
-              newsletter
-            </p>
-            <p className="mt-4 max-w-sm text-sm text-bone/60">
-              New collections, private sales and the stories behind our pieces. Delivered monthly, never more.
-            </p>
-            <NewsletterForm source="footer" tone="dark" className="mt-8 max-w-md" />
-          </div>
+          {settings.features.newsletter ? (
+            <div className="lg:col-span-5">
+              <p className="font-display text-4xl leading-tight sm:text-5xl">
+                Join our
+                <br />
+                newsletter
+              </p>
+              <p className="mt-4 max-w-sm text-sm text-bone/60">
+                New collections, private sales and the stories behind our pieces. Delivered monthly, never more.
+              </p>
+              <NewsletterForm source="footer" tone="dark" className="mt-8 max-w-md" />
+            </div>
+          ) : (
+            <div className="lg:col-span-5">
+              <p className="font-display text-4xl leading-tight sm:text-5xl">{settings.storeName}</p>
+              <p className="mt-4 max-w-sm text-sm text-bone/60">{settings.description}</p>
+              <a href={`mailto:${settings.supportEmail}`} className="link-underline mt-6 inline-block text-sm text-bone/85 hover:text-bone">
+                {settings.supportEmail}
+              </a>
+            </div>
+          )}
 
           <nav aria-label="Footer" className="grid grid-cols-2 gap-10 sm:grid-cols-3 lg:col-span-6 lg:col-start-7">
             {[
               { title: 'Shop', links: shop },
-              { title: 'Help', links: help },
-              { title: 'The house', links: house },
+              { title: 'Help', links: inPlan(help) },
+              { title: 'The house', links: inPlan(house) },
             ].map((col) => (
               <div key={col.title}>
                 <p className="eyebrow mb-5 text-bone/50">{col.title}</p>

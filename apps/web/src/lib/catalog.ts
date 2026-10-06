@@ -1,13 +1,17 @@
 import 'server-only';
 import { cache } from 'react';
 import { api, apiFetch } from './api';
+import { hasFeature } from './site';
 import type { Banner, CategoryNode, Collection, Paginated, ProductCard, ProductDetail, ProductFacets } from './types';
 
 /** Server-side catalog fetchers. Cached in the Next.js data cache and revalidated periodically. */
 
 export const getCategoryTree = cache(() => api<CategoryNode[]>('/categories', { revalidate: 300, tags: ['categories'] }));
 
-export const getCollections = cache(() => api<Collection[]>('/collections', { revalidate: 300, tags: ['collections'] }));
+/** Collections are an Advanced-plan feature; on Basic there are none (and the API route is closed). */
+export const getCollections = cache(async (): Promise<Collection[]> =>
+  (await hasFeature('collections')) ? api<Collection[]>('/collections', { revalidate: 300, tags: ['collections'] }) : [],
+);
 
 export const getBanners = cache((placement: Banner['placement']) =>
   api<Banner[]>('/banners', { query: { placement }, revalidate: 120, tags: ['banners'] }),

@@ -4,15 +4,18 @@ import { ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { OrderRow } from '@/components/account/OrderRow';
+import { useFeature } from '@/components/layout/SiteProvider';
 import { AddressBlock } from '@/components/order/OrderParts';
 import { apiFetch, api } from '@/lib/api';
 import type { Address, OrderSummary, Paginated } from '@/lib/types';
+import { cn } from '@/lib/utils';
 import { useAuth } from '@/stores/auth';
 import { useWishlist } from '@/stores/wishlist';
 
 export default function AccountOverviewPage() {
   const user = useAuth((s) => s.user);
   const wishCount = useWishlist((s) => s.ids.length);
+  const wishlist = useFeature('wishlist');
   const [orders, setOrders] = useState<Paginated<OrderSummary> | null>(null);
   const [addresses, setAddresses] = useState<Address[] | null>(null);
 
@@ -25,10 +28,10 @@ export default function AccountOverviewPage() {
 
   return (
     <div className="space-y-12">
-      <ul className="grid grid-cols-3 border-y border-stone-200" aria-label="Account summary">
+      <ul className={cn('grid border-y border-stone-200', wishlist ? 'grid-cols-3' : 'grid-cols-2')} aria-label="Account summary">
         {[
           { label: 'Orders', value: orders?.meta.total ?? '—', href: '/account/orders' },
-          { label: 'Saved', value: wishCount, href: '/wishlist' },
+          ...(wishlist ? [{ label: 'Saved', value: wishCount, href: '/wishlist' }] : []),
           { label: 'Addresses', value: addresses?.length ?? '—', href: '/account/addresses' },
         ].map((s) => (
           <li key={s.label} className="border-r border-stone-200 last:border-r-0 [&:not(:first-child)]:pl-4 sm:[&:not(:first-child)]:pl-8">

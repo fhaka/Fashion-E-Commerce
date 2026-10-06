@@ -6,8 +6,9 @@ import { useState } from 'react';
 import { emailSchema } from '@maison/shared';
 import { api, ApiRequestError } from '@/lib/api';
 import { cn, EASE } from '@/lib/utils';
+import { useFeature } from '../layout/SiteProvider';
 
-export function NewsletterForm({ source = 'footer', tone = 'dark', className }: { source?: string; tone?: 'dark' | 'light'; className?: string }) {
+function NewsletterFormInner({ source = 'footer', tone = 'dark', className }: { source?: string; tone?: 'dark' | 'light'; className?: string }) {
   const [email, setEmail] = useState('');
   const [state, setState] = useState<'idle' | 'loading' | 'done' | 'error'>('idle');
   const [message, setMessage] = useState('');
@@ -88,4 +89,9 @@ export function NewsletterForm({ source = 'footer', tone = 'dark', className }: 
       </AnimatePresence>
     </div>
   );
+}
+
+/** Rendered only when the store plan includes "newsletter". */
+export function NewsletterForm(props: { source?: string; tone?: 'dark' | 'light'; className?: string }) {
+  return useFeature('newsletter') ? <NewsletterFormInner {...props} /> : null;
 }

@@ -3,9 +3,10 @@
 import { Download } from 'lucide-react';
 import { useState } from 'react';
 import { DataTable, PageHeader, Pagination, Pill, SearchInput, Tabs, type Column } from '@/components/admin/ui';
+import { useFeature } from '@/components/layout/SiteProvider';
 import { Button } from '@/components/ui/Button';
-import { api } from '@/lib/api';
 import { downloadFile, formatDate, useAdminQuery } from '@/lib/admin';
+import { api } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import { toast } from '@/stores/toast';
 
@@ -13,7 +14,16 @@ interface Subscriber { id: string; email: string; status: 'SUBSCRIBED' | 'UNSUBS
 interface Message { id: string; name: string; email: string; subject: string | null; message: string; isRead: boolean; createdAt: string }
 
 export default function NewsletterPage() {
-  const [tab, setTab] = useState<'subscribers' | 'messages'>('subscribers');
+  const newsletter = useFeature('newsletter');
+  const [tab, setTab] = useState<'subscribers' | 'messages'>(newsletter ? 'subscribers' : 'messages');
+  if (!newsletter) {
+    return (
+      <>
+        <PageHeader title="Messages" description="Messages from the contact form." />
+        <Messages />
+      </>
+    );
+  }
   return (
     <>
       <PageHeader title="Newsletter & messages" description="Your mailing list and messages from the contact form." />

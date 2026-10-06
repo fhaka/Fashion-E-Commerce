@@ -3,6 +3,7 @@ import { env } from './config/env';
 import { logger } from './config/logger';
 import { prisma } from './db/prisma';
 import { expireStaleReservations } from './services/order.service';
+import { revalidateStorefront } from './utils/revalidate';
 
 const RESERVATION_SWEEP_MS = 60_000;
 
@@ -12,9 +13,13 @@ async function main() {
 
   const server = app.listen(env.PORT, () => {
     logger.info(`🧵 Maison API listening on http://localhost:${env.PORT} (${env.NODE_ENV})`);
+    logger.info(`   plan: ${env.PLAN}`);
     logger.info(
       `   payments: ${env.stripeEnabled ? 'Stripe' : 'MOCK (test mode)'} · storage: ${env.cloudinaryEnabled ? 'Cloudinary' : 'local disk'} · email: ${env.SMTP_HOST && !env.DEMO_MODE ? 'SMTP' : 'log only'}`,
     );
+    // Plan and currency only change on restart and affect what the API returns everywhere
+    // (e.g. which banners exist), so refresh every storefront cache.
+    revalidateStorefront(['site', 'banners', 'collections', 'categories', 'products']);
     if (env.DEMO_MODE) logger.warn(`   DEMO MODE: one-click demo sign-in enabled, data resets daily at ${env.DEMO_RESET_HOUR_UTC}:00 UTC`);
   });
 

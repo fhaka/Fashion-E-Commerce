@@ -12,6 +12,7 @@ import { useUi } from '@/stores/ui';
 import { useScrollLock } from '../ui/Drawer';
 import { Img } from '../ui/Img';
 import { Price } from '../ui/Price';
+import { useFeature } from './SiteProvider';
 
 const POPULAR = ['Cashmere', 'Wool coat', 'Tailoring', 'Leather', 'Silk dress', 'Denim'];
 
@@ -22,6 +23,7 @@ export function SearchOverlay() {
   const [q, setQ] = useState('');
   const [results, setResults] = useState<SearchSuggestions | null>(null);
   const [loading, setLoading] = useState(false);
+  const suggest = useFeature('searchSuggestions');
   useScrollLock(searchOpen);
 
   useEffect(() => {
@@ -38,7 +40,8 @@ export function SearchOverlay() {
   // Debounced suggestions; ignore responses for stale queries.
   useEffect(() => {
     const term = q.trim();
-    if (term.length < 2) {
+    // Instant suggestions are part of the Advanced plan; otherwise Enter goes to the results page.
+    if (term.length < 2 || !suggest) {
       setResults(null);
       return;
     }
@@ -58,7 +61,7 @@ export function SearchOverlay() {
       cancelled = true;
       clearTimeout(t);
     };
-  }, [q]);
+  }, [q, suggest]);
 
   const go = (href: string) => {
     closeSearch();

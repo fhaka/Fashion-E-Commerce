@@ -1,5 +1,7 @@
 /** Response shapes returned by the Maison API (mirrors apps/api/src/services/serializers.ts). */
 
+import type { FeatureFlags, Plan } from '@maison/shared';
+
 export interface ImageRef {
   url: string;
   alt: string;
@@ -267,6 +269,9 @@ export interface SiteSettings {
   locale: string;
   reservationMinutes: number;
   shippingMethods: ShippingOption[];
+  /** Client package and the features it includes (see docs/PLANS.md). */
+  plan: Plan;
+  features: FeatureFlags;
 }
 
 /** Public storefront configuration from `GET /site`. */

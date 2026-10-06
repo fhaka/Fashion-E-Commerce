@@ -5,10 +5,11 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Suspense, useState } from 'react';
 import { DataTable, PageHeader, Pagination, Pill, SearchInput, Tabs, Thumb, type Column } from '@/components/admin/ui';
+import { useSite } from '@/components/layout/SiteProvider';
 import { Button } from '@/components/ui/Button';
 import { Drawer } from '@/components/ui/Drawer';
-import { api, ApiRequestError } from '@/lib/api';
 import { formatDate, useAdminQuery } from '@/lib/admin';
+import { api, ApiRequestError } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import { toast } from '@/stores/toast';
 
@@ -35,6 +36,7 @@ function InventoryInner() {
   const [history, setHistory] = useState<Row | null>(null);
   const { data, meta, loading, setData } = useAdminQuery<Row[]>('/admin/inventory', { filter, q: q || undefined, page, limit: 30 });
 
+  const { features } = useSite();
   const columns: Column<Row>[] = [
     {
       key: 'product',
@@ -62,15 +64,20 @@ function InventoryInner() {
     },
     { key: 'reserved', header: 'Held', align: 'right', cell: (r) => (r.reserved ? <span title="Held by unpaid checkouts">{r.reserved}</span> : <span className="text-stone-300">0</span>) },
     { key: 'adjust', header: 'On hand', cell: (r) => <StockEditor row={r} onSaved={(u) => setData((rows) => rows?.map((x) => (x.variantId === r.variantId ? { ...x, ...u } : x)) ?? rows)} /> },
-    {
-      key: 'history',
-      header: <span className="sr-only">History</span>,
-      cell: (r) => (
-        <button type="button" onClick={() => setHistory(r)} className="flex items-center gap-1 text-xs text-stone-500 hover:text-ink" aria-label={`Stock history for ${r.sku}`}>
-          <History className="h-3.5 w-3.5" /> History
-        </button>
-      ),
-    },
+    // The stock audit trail is part of the Premium plan.
+    ...(features.inventoryHistory
+      ? [
+          {
+            key: 'history',
+            header: <span className="sr-only">History</span>,
+            cell: (r: Row) => (
+              <button type="button" onClick={() => setHistory(r)} className="flex items-center gap-1 text-xs text-stone-500 hover:text-ink" aria-label={`Stock history for ${r.sku}`}>
+                <History className="h-3.5 w-3.5" /> History
+              </button>
+            ),
+          },
+        ]
+      : []),
   ];
 
   return (

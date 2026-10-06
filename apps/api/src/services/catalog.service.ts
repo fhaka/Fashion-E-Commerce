@@ -1,6 +1,8 @@
 import type { BannerPlacement, Category, Prisma } from '@prisma/client';
-import type { ProductQuery } from '@maison/shared';
+import { bannerPlacementAllowed, type ProductQuery } from '@maison/shared';
+import { env } from '../config/env';
 import { prisma } from '../db/prisma';
+import { hasFeature } from '../middleware/plan';
 import { ApiError } from '../utils/ApiError';
 import { pageMeta, paginate } from '../utils/helpers';
 import { productCardInclude, productDetailInclude, toProductCard, toProductDetail } from './serializers';
@@ -274,11 +276,14 @@ export async function listColors() {
 }
 
 export async function listBanners(placement?: BannerPlacement) {
+  if (placement && !bannerPlacementAllowed(env.PLAN, placement)) return [];
   const now = new Date();
   return prisma.banner.findMany({
     where: {
       isActive: true,
       ...(placement ? { placement } : {}),
+      // Editorial placements (campaign, brand story, lookbook) are a Premium feature.
+      ...(hasFeature('editorialHome') ? {} : { placement: 'HERO' }),
       AND: [{ OR: [{ startsAt: null }, { startsAt: { lte: now } }] }, { OR: [{ endsAt: null }, { endsAt: { gte: now } }] }],
     },
     orderBy: [{ placement: 'asc' }, { sortOrder: 'asc' }],

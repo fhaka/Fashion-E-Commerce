@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { SITE_URL } from '@/lib/utils';
+import { JsonLd } from './JsonLd';
 
 /** Visible breadcrumbs plus matching BreadcrumbList structured data for search engines. */
 export function Breadcrumbs({ items, className }: { items: { name: string; href?: string }[]; className?: string }) {
@@ -32,7 +33,7 @@ export function Breadcrumbs({ items, className }: { items: { name: string; href?
           </li>
         ))}
       </ol>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c') }} />
+      <JsonLd data={jsonLd} />
     </nav>
   );
 }

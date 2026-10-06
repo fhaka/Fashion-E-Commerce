@@ -11,6 +11,7 @@ Browser ──► Next.js (apps/web) ──/api/* rewrite──► Express API (
 - **Monorepo** (npm workspaces): `apps/api`, `apps/web`, `packages/shared`.
 - **packages/shared** — zod schemas, enums and money helpers used by both the API (request validation) and the web app (form validation), so rules never drift.
 - **White-label** — store settings (one `StoreSettings` row) and content pages (`ContentPage`) are edited in the admin and published through `GET /site` and `GET /pages/:slug`. The web app injects the brand colours as CSS variables in the root layout and caches everything under the `site` tag, which the API refreshes on save. Currency and locale are per deployment (`STORE_CURRENCY` / `STORE_LOCALE`).
+- **Plans** — `packages/shared/src/plans.ts` maps every gated feature to the cheapest plan that includes it. The API enforces it (`requireFeature` middleware → `404 FEATURE_UNAVAILABLE`), `/site` publishes the flags, and the web app hides UI and returns 404 pages through `useFeature()` / `requireFeature()`. Decorative motion falls back to static rendering below Premium via `useStaticMotion()`.
 - **Same-origin API** — Next.js rewrites `/api/*` to Express. The browser talks to one origin, so the refresh-token cookie is `httpOnly; SameSite=Lax` with no CORS complexity.
 
 ## Backend layering (`apps/api/src`)
@@ -89,5 +90,5 @@ All motion respects `prefers-reduced-motion`.
 9. ✅ Documentation and deployment guides
 10. ✅ Public sales demo mode (one-click demo sign-in, guardrails, nightly reset)
 11. ✅ White-label: store settings, brand colours and logo, currency/locale, editable pages, branded emails
-12. Plan packages (Basic / Advanced / Premium) via one `PLAN` setting
+12. ✅ Plan packages (Basic / Advanced / Premium) via one `PLAN` setting
 13. Final release: end-to-end test of every plan and the demo, v1.0

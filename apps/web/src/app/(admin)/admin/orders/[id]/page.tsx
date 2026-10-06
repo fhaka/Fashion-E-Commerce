@@ -5,11 +5,12 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { ConfirmDialog, PageHeader, Panel, Pill, TextArea } from '@/components/admin/ui';
+import { useSite } from '@/components/layout/SiteProvider';
 import { AddressBlock, OrderItems, OrderTimeline, OrderTotals, STATUS_LABEL, StatusBadge } from '@/components/order/OrderParts';
 import { Button } from '@/components/ui/Button';
 import { Checkbox, FormError, Input } from '@/components/ui/Field';
-import { api, ApiRequestError } from '@/lib/api';
 import { formatDate, useAdminQuery } from '@/lib/admin';
+import { api, ApiRequestError } from '@/lib/api';
 import type { OrderDetail, OrderStatus } from '@/lib/types';
 import { formatMoney } from '@/lib/utils';
 import { toast } from '@/stores/toast';
@@ -30,6 +31,7 @@ const ACTION_LABEL: Partial<Record<OrderStatus, string>> = {
 };
 
 export default function AdminOrderPage() {
+  const { features } = useSite();
   const { id } = useParams<{ id: string }>();
   const { data: order, setData, error } = useAdminQuery<AdminOrder>(`/admin/orders/${id}`);
   const [carrier, setCarrier] = useState('');
@@ -104,7 +106,7 @@ export default function AdminOrderPage() {
                 <TextArea label="Note for the timeline (optional)" value={note} onChange={setNote} rows={2} hint="Shown to the customer in their order history." />
                 <FormError message={formError} />
                 <div className="flex flex-wrap gap-2">
-                  {order.allowedTransitions.map((s) =>
+                  {order.allowedTransitions.filter((s) => s !== 'REFUNDED' || features.refunds).map((s) =>
                     destructive(s) ? (
                       <Button key={s} variant="outline" onClick={() => setConfirm(s)} disabled={!!busy}>
                         {ACTION_LABEL[s]}

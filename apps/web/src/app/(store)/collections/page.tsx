@@ -5,6 +5,7 @@ import { ImageReveal, Reveal } from '@/components/motion';
 import { Img } from '@/components/ui/Img';
 import { PageIntro } from '@/components/ui/PageIntro';
 import { getCollections } from '@/lib/catalog';
+import { requireFeature } from '@/lib/site';
 import { cn } from '@/lib/utils';
 
 export const revalidate = 300;
@@ -16,6 +17,7 @@ export const metadata: Metadata = {
 };
 
 export default async function CollectionsPage() {
+  await requireFeature('collections');
   const collections = await getCollections();
   return (
     <>

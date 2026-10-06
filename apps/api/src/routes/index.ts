@@ -1,8 +1,9 @@
 import { Router } from 'express';
 import { contactSchema, newsletterSchema, trackOrderSchema, unsubscribeSchema } from '@maison/shared';
 import * as account from '../controllers/account.controller';
-import { prisma } from '../db/prisma';
 import * as site from '../controllers/settings.controller';
+import { prisma } from '../db/prisma';
+import { requireFeature } from '../middleware/plan';
 import { formLimiter } from '../middleware/rateLimit';
 import { validate } from '../middleware/validate';
 import { accountRouter, wishlistRouter } from './account.routes';
@@ -32,7 +33,7 @@ apiRouter.use('/checkout', checkoutRouter);
 apiRouter.use('/webhooks', webhookRouter);
 apiRouter.use('/admin', adminRouter);
 
-apiRouter.get('/orders/track', formLimiter, validate({ query: trackOrderSchema }), account.trackOrder);
-apiRouter.post('/newsletter/subscribe', formLimiter, validate({ body: newsletterSchema }), account.subscribe);
+apiRouter.get('/orders/track', requireFeature('orderTracking'), formLimiter, validate({ query: trackOrderSchema }), account.trackOrder);
+apiRouter.post('/newsletter/subscribe', requireFeature('newsletter'), formLimiter, validate({ body: newsletterSchema }), account.subscribe);
 apiRouter.post('/newsletter/unsubscribe', validate({ body: unsubscribeSchema }), account.unsubscribe);
 apiRouter.post('/contact', formLimiter, validate({ body: contactSchema }), account.contact);

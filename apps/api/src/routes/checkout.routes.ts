@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { checkoutSchema, emailSchema, quoteSchema } from '@maison/shared';
 import * as c from '../controllers/checkout.controller';
 import { optionalAuth } from '../middleware/auth';
+import { requireFeature } from '../middleware/plan';
 import { checkoutLimiter, couponLimiter } from '../middleware/rateLimit';
 import { validate } from '../middleware/validate';
 
@@ -12,6 +13,7 @@ checkoutRouter.get('/config', c.config);
 checkoutRouter.post('/quote', optionalAuth, validate({ body: quoteSchema.extend({ email: emailSchema.optional() }) }), c.quote);
 checkoutRouter.post(
   '/coupon/validate',
+  requireFeature('coupons'),
   optionalAuth,
   couponLimiter,
   validate({ body: z.object({ code: z.string().trim().min(1).max(40), subtotal: z.coerce.number().int().min(0), email: emailSchema.optional() }) }),

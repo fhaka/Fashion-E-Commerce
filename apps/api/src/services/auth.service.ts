@@ -4,11 +4,12 @@ import type { LoginInput, RegisterInput } from '@maison/shared';
 import { env } from '../config/env';
 import { logger } from '../config/logger';
 import { prisma } from '../db/prisma';
+import { hasFeature } from '../middleware/plan';
 import { sendBrandedEmail } from '../providers/email/branded';
-import { assertNotDemoAccount } from './demo.service';
 import { ApiError } from '../utils/ApiError';
 import { addDays, randomToken, sha256 } from '../utils/helpers';
 import { signAccessToken } from '../utils/tokens';
+import { assertNotDemoAccount } from './demo.service';
 
 const BCRYPT_ROUNDS = 12;
 /** A refresh token reused within this window (e.g. two tabs refreshing at once) is not treated as theft. */
@@ -71,7 +72,7 @@ export async function register(input: RegisterInput, meta: SessionMeta): Promise
     data: { email: input.email, passwordHash, firstName: input.firstName, lastName: input.lastName, lastLoginAt: new Date() },
   });
 
-  if (input.newsletter) {
+  if (input.newsletter && hasFeature('newsletter')) {
     await prisma.newsletterSubscriber.upsert({
       where: { email: user.email },
       create: { email: user.email, source: 'register' },
@@ -82,7 +83,7 @@ export async function register(input: RegisterInput, meta: SessionMeta): Promise
   void sendBrandedEmail(user.email, (s) => ({
     subject: `Welcome to ${s.storeName}`,
     heading: `Welcome, ${user.firstName}`,
-    paragraphs: [`Thank you for creating an account with ${s.storeName}. You can now check out faster, save addresses, keep a wishlist and follow every order.`],
+    paragraphs: [`Thank you for creating an account with ${s.storeName}. You can now check out faster, save addresses${hasFeature('wishlist') ? ', keep a wishlist' : ''} and follow every order.`],
     button: { label: 'Start shopping', url: `${env.WEB_URL}/shop` },
   }));
 

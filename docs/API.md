@@ -30,6 +30,7 @@ the single source of truth used by both the API and the web forms.
 | 401 | `UNAUTHORIZED` / `TOKEN_EXPIRED` | Missing or invalid access token, or it has expired (refresh and retry) |
 | 403 | `FORBIDDEN` | Signed in but not allowed (e.g. not an admin) |
 | 404 | `NOT_FOUND` | Unknown route or record |
+| 404 | `FEATURE_UNAVAILABLE` | The feature isn't part of the store's plan (`PLAN`), e.g. wishlist on Basic |
 | 409 | `CONFLICT` | Duplicate (email, slug, SKU, code) or the record is in use |
 | 413 | `PAYLOAD_TOO_LARGE` | Body over 1 MB |
 | 422 | `VALIDATION_ERROR` | Input failed validation; `details.fields` maps field → message |
@@ -56,6 +57,11 @@ and retry. Reusing an old refresh token revokes all of that user's sessions.
 
 Legend: 🔓 public · 👤 signed-in customer · 🔐 admin · ⏱ rate-limited
 
+**Plans.** Some endpoints belong to a paid package and return `404 FEATURE_UNAVAILABLE` on lower
+plans: wishlist, reviews, collections, search suggestions, related products, order tracking,
+newsletter signup, refunds and admin reviews/collections/newsletter (Advanced); sales reports,
+inventory history and editorial banner placements (Premium). See [PLANS.md](PLANS.md).
+
 ---
 
 ## Health
@@ -64,7 +70,7 @@ Legend: 🔓 public · 👤 signed-in customer · 🔐 admin · ⏱ rate-limited
 |---|---|---|
 | GET | `/health` (outside `/api/v1`) | Process liveness (used by Docker health checks) |
 | GET | `/api/v1/health` | Liveness plus a database check |
-| GET | `/api/v1/site` | Public storefront configuration: `{ demo, settings }`. `settings` holds branding, contact, shipping options, tax rules, `theme` colours, `currency` and `locale`; `demo` is `null` outside demo mode |
+| GET | `/api/v1/site` | Public storefront configuration: `{ demo, settings }`. `settings` holds branding, contact, shipping options, tax rules, `theme` colours, `currency`, `locale`, `plan` and `features` (which features the plan includes); `demo` is `null` outside demo mode |
 | GET | `/api/v1/pages/:slug` | Content page (`about`, `shipping-returns`, `privacy`, `terms`): `{ title, intro, body (Markdown), imageUrl, updatedAt }` |
 
 ## Auth: `/auth`

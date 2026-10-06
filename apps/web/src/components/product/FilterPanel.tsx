@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import type { ListingState } from '@/lib/listing';
 import type { CategoryNode, ProductFacets } from '@/lib/types';
 import { cn, STORE_CURRENCY } from '@/lib/utils';
+import { useFeature } from '../layout/SiteProvider';
 import { AccordionItem } from '../ui/Accordion';
 
 const GENDER_LABELS: Record<string, string> = { WOMEN: 'Women', MEN: 'Men', UNISEX: 'Unisex' };
@@ -29,6 +30,8 @@ export function FilterPanel({
   fixed: (keyof ListingState)[];
   onChange: (next: ListingState) => void;
 }) {
+  // Colour and availability filters are part of the Advanced plan.
+  const advanced = useFeature('advancedFilters');
   const update = (patch: Partial<ListingState>) => onChange({ ...state, ...patch });
   const toggleIn = (key: 'size' | 'color', value: string) =>
     update({ [key]: state[key].includes(value) ? state[key].filter((v) => v !== value) : [...state[key], value] });
@@ -114,7 +117,7 @@ export function FilterPanel({
         </AccordionItem>
       )}
 
-      {facets.colors.length > 0 && (
+      {advanced && facets.colors.length > 0 && (
         <AccordionItem title="Colour" defaultOpen badge={state.color.length > 0 && <Dot />}>
           <ul className="grid grid-cols-2 gap-x-3 gap-y-3">
             {facets.colors.map((c) => {
@@ -148,13 +151,15 @@ export function FilterPanel({
         />
       </AccordionItem>
 
-      <AccordionItem title="Availability" defaultOpen={state.inStock || state.onSale || state.isNew} badge={(state.inStock || state.onSale || state.isNew) && <Dot />}>
-        <div className="space-y-3">
-          <Toggle label="In stock only" checked={state.inStock} onChange={(v) => update({ inStock: v })} />
-          {!fixed.includes('onSale') && <Toggle label="On sale" checked={state.onSale} onChange={(v) => update({ onSale: v })} />}
-          {!fixed.includes('isNew') && <Toggle label="New arrivals" checked={state.isNew} onChange={(v) => update({ isNew: v })} />}
-        </div>
-      </AccordionItem>
+      {advanced && (
+        <AccordionItem title="Availability" defaultOpen={state.inStock || state.onSale || state.isNew} badge={(state.inStock || state.onSale || state.isNew) && <Dot />}>
+          <div className="space-y-3">
+            <Toggle label="In stock only" checked={state.inStock} onChange={(v) => update({ inStock: v })} />
+            {!fixed.includes('onSale') && <Toggle label="On sale" checked={state.onSale} onChange={(v) => update({ onSale: v })} />}
+            {!fixed.includes('isNew') && <Toggle label="New arrivals" checked={state.isNew} onChange={(v) => update({ isNew: v })} />}
+          </div>
+        </AccordionItem>
+      )}
     </div>
   );
 }
