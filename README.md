@@ -214,6 +214,7 @@ Run from the repository root:
 | `npm run typecheck` | TypeScript in every workspace |
 | `npm test` | API integration tests (needs the database running) |
 | `npm run db:up` / `db:down` | Start or stop the development database |
+| `npm run smoke -- <url>` | Post-deploy smoke test of a running shop (add `--checkout` for a demo-mode test order) |
 | `npm run demo:reset` | Reset a public demo to fresh demo data (only with `DEMO_MODE=true`) |
 
 ---
@@ -272,4 +273,6 @@ Step-by-step instructions and a go-live checklist are in [docs/DEPLOYMENT.md](do
 | [docs/DATABASE.md](docs/DATABASE.md) | Migrations, seeding, backups |
 | [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) | Production deployment and go-live checklist |
 | [docs/CLIENT-SETUP.md](docs/CLIENT-SETUP.md) | Setting up the shop for a new client (branding, settings, pages, catalogue, handover) |
+| [docs/HANDOVER.md](docs/HANDOVER.md) | Owner's guide to give the client: running the shop day to day |
+| [CHANGELOG.md](CHANGELOG.md) | Release notes |
 | [docs/PLANS.md](docs/PLANS.md) | Basic / Advanced / Premium client packages |

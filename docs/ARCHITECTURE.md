@@ -91,4 +91,4 @@ All motion respects `prefers-reduced-motion`.
 10. ✅ Public sales demo mode (one-click demo sign-in, guardrails, nightly reset)
 11. ✅ White-label: store settings, brand colours and logo, currency/locale, editable pages, branded emails
 12. ✅ Plan packages (Basic / Advanced / Premium) via one `PLAN` setting
-13. Final release: end-to-end test of every plan and the demo, v1.0
+13. ✅ v1.0 release: end-to-end smoke tests of every plan and the demo, changelog, handover guide

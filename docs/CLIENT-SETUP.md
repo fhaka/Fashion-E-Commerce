@@ -108,11 +108,12 @@ Use Cloudinary in production so product images are resized and served from a CDN
 
 ## 7. Go live and hand over
 
-1. Run through the [go-live checklist](DEPLOYMENT.md#go-live-checklist).
+1. Run `npm run smoke -- https://<domain>` and the [go-live checklist](DEPLOYMENT.md#go-live-checklist).
 2. Place one real order with a real card and refund it from Admin → Orders.
 3. Submit `https://<domain>/sitemap.xml` in Google Search Console.
 4. Hand over to the client:
    - their admin login (ask them to change the password at Account → Profile);
+   - the owner's guide [HANDOVER.md](HANDOVER.md) (send it as a PDF or link);
    - a 30-minute walkthrough: orders and statuses, refunds, stock, products, coupons, banners, Settings, Pages;
    - who to contact for support, and how backups work.
 

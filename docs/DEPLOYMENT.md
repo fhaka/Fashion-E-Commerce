@@ -70,12 +70,18 @@ The first build takes a few minutes. Startup order is handled for you:
 4. **web** starts once the API is healthy.
 5. **caddy** gets the HTTPS certificate and starts serving.
 
-Check:
+Check on the server:
 
 ```bash
 docker compose -f docker-compose.prod.yml --env-file .env.production ps
-curl -I https://shop.example.com
 curl https://shop.example.com/api/v1/health
+```
+
+Then run the smoke test from any machine with Node.js 20+ and a copy of the repository (e.g. your
+laptop). It checks pages, the API, security headers and the plan's features:
+
+```bash
+npm run smoke -- https://shop.example.com
 ```
 
 > Tip: create an alias so you don't type the long command every time:

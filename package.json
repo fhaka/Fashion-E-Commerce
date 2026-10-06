@@ -26,7 +26,8 @@
     "build": "npm run build -w @maison/shared && npm run build -w @maison/api && npm run build -w @maison/web --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "lint": "npm run lint --workspaces --if-present",
-    "test": "npm run test --workspaces --if-present"
+    "test": "npm run test --workspaces --if-present",
+    "smoke": "node scripts/smoke-test.mjs"
   },
   "devDependencies": {
     "concurrently": "^9.1.2"
