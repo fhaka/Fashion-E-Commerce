@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Admin: every image field (collections, categories, banners, logo, About image) and the product video are uploaded from your computer (button or drag and drop) with a live preview; pasting a link remains optional.
+- Product videos: MP4 or WebM up to 50 MB, content-checked, stored locally or on Cloudinary (as video). Clear error messages with the size limit.
+- Fix: the storefront proxy limited request bodies to 10 MB, so larger uploads failed; raised to 60 MB.
+
 ## 1.0.0 — 2026-10-06
 
 First production release: a white-label premium fashion store sold as Basic, Advanced and

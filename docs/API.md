@@ -207,7 +207,7 @@ affected cached pages.
 | Dashboard | `GET /admin/stats/overview?range=7\|30\|90\|365` |
 | Reports | `GET /admin/reports/sales?from&to&groupBy=day\|week\|month&format=json\|csv` (max 3 years) |
 | Products | `GET /admin/products?q&status&categoryId&featured&lowStock&sort&page&limit` · `POST /admin/products` · `GET/PUT/DELETE /admin/products/:id` · `POST /admin/products/:id/duplicate` · `PATCH /admin/products/bulk` `{ ids, status?, isFeatured?, isBestSeller?, isNew? }` |
-| Uploads | `POST /admin/uploads` (multipart `files`, up to 10 images, 8 MB each, JPEG/PNG/WebP/AVIF, file signatures checked) · `DELETE /admin/uploads` `{ publicId }` |
+| Uploads | `POST /admin/uploads?folder=` (multipart `files`, up to 10 images, 8 MB each, JPEG/PNG/WebP/AVIF, file signatures checked) · `POST /admin/uploads/video` (multipart `file`, one MP4/WebM up to 50 MB, Premium) · `DELETE /admin/uploads` `{ publicId }` |
 | Inventory | `GET /admin/inventory?q&filter=all\|low\|out` · `GET /admin/inventory/low-stock` · `PATCH /admin/inventory/:variantId` `{ quantity? or delta?, lowStockThreshold?, note? }` · `GET /admin/inventory/:variantId/movements` |
 | Categories | `GET/POST /admin/categories` · `PUT/DELETE /admin/categories/:id` |
 | Collections | `GET/POST /admin/collections` · `GET/PUT/DELETE /admin/collections/:id` · `PUT /admin/collections/:id/products` `{ productIds }` |

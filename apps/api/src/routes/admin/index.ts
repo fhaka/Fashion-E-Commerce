@@ -24,7 +24,7 @@ import * as settings from '../../controllers/settings.controller';
 import { authenticate, requireAdmin } from '../../middleware/auth';
 import { requireFeature } from '../../middleware/plan';
 import { uploadLimiter } from '../../middleware/rateLimit';
-import { imageUpload } from '../../middleware/upload';
+import { imageUpload, videoUpload } from '../../middleware/upload';
 import { validate } from '../../middleware/validate';
 import { revalidateOnWrite } from '../../utils/revalidate';
 
@@ -97,6 +97,7 @@ adminRouter.post('/products/:id/duplicate', c.duplicateProduct);
 
 /* Uploads */
 adminRouter.post('/uploads', uploadLimiter, imageUpload.array('files', 10), c.upload);
+adminRouter.post('/uploads/video', requireFeature('productMedia'), uploadLimiter, videoUpload.single('file'), c.uploadVideo);
 adminRouter.delete('/uploads', validate({ body: z.object({ publicId: z.string().min(1).max(300) }) }), c.deleteUpload);
 
 /* Inventory */

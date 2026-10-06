@@ -422,6 +422,26 @@ describe('uploads', () => {
     await A('delete', '/uploads').send({ publicId: '../../package.json' }).expect(204);
     expect(fs.existsSync(path.resolve(__dirname, '..', '..', 'package.json'))).toBe(true);
   });
+
+  it('stores product videos (MP4 and WebM)', async () => {
+    const mp4 = Buffer.concat([Buffer.from([0, 0, 0, 0x20]), Buffer.from('ftypisom'), Buffer.alloc(64)]);
+    const webm = Buffer.concat([Buffer.from([0x1a, 0x45, 0xdf, 0xa3]), Buffer.alloc(64)]);
+    for (const [buf, name, type, ext] of [[mp4, 'clip.mp4', 'video/mp4', 'mp4'], [webm, 'clip.webm', 'video/webm', 'webm']] as const) {
+      const res = await A('post', '/uploads/video').attach('file', buf, { filename: name, contentType: type });
+      expect(res.status).toBe(201);
+      expect(res.body.data.url).toMatch(new RegExp(`/uploads/videos/.+\.${ext}$`));
+      await A('delete', '/uploads').send({ publicId: res.body.data.publicId }).expect(204);
+    }
+  });
+
+  it('rejects fake videos, other file types and anonymous uploads', async () => {
+    const fake = await A('post', '/uploads/video').attach('file', Buffer.from('definitely not a video'.padEnd(64)), { filename: 'x.mp4', contentType: 'video/mp4' });
+    expect(fake.status).toBe(400);
+    const mov = await A('post', '/uploads/video').attach('file', Buffer.alloc(64), { filename: 'x.mov', contentType: 'video/quicktime' });
+    expect(mov.status).toBe(400);
+    const anon = await request(app).post(api('/admin/uploads/video')).attach('file', Buffer.alloc(64), { filename: 'x.mp4', contentType: 'video/mp4' });
+    expect(anon.status).toBe(401);
+  });
 });
 
 describe('newsletter export', () => {

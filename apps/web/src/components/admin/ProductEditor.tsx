@@ -12,7 +12,7 @@ import { toast } from '@/stores/toast';
 import { useSite } from '../layout/SiteProvider';
 import { Button } from '../ui/Button';
 import { Checkbox, FormError, Input, Select, zodFieldErrors } from '../ui/Field';
-import { ConfirmDialog, PageHeader, Panel, Pill, TextArea, Toggle } from './ui';
+import { ConfirmDialog, PageHeader, Panel, Pill, TextArea, Toggle, VideoField } from './ui';
 
 /* ───────────────────────── Types ───────────────────────── */
 
@@ -377,7 +377,7 @@ export function ProductEditor({ product }: { product?: AdminProduct }) {
 
           {features.productMedia && (
             <Panel title="Video">
-              <Input label="Video URL (MP4)" value={form.videoUrl} onChange={(e) => set('videoUrl', e.target.value)} optional hint="Plays as the last item in the gallery." error={err('videoUrl')} />
+              <VideoField label="Product video" value={form.videoUrl} onChange={(v) => set('videoUrl', v)} optional previewClassName="h-36 w-28" hint="MP4 or WebM, up to 50 MB. Plays as the last item in the gallery; short, silent clips work best." error={err('videoUrl')} />
             </Panel>
           )}
 

@@ -51,7 +51,7 @@ Fill in at least:
   `node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"` or
   `openssl rand -hex 48`.
 - `SMTP_*` and `EMAIL_FROM`. Without them, customers can't reset passwords or receive order emails.
-- `CLOUDINARY_*` (recommended). Otherwise uploaded images are stored in a Docker volume.
+- `CLOUDINARY_*` (recommended). Otherwise uploaded images and product videos are stored in a Docker volume and served by your own server; Cloudinary resizes images and streams videos from a CDN.
 - Stripe keys only when you're ready for real payments. Empty keys mean demo mode.
 
 `.env.production` is git-ignored. Keep it only on the server, with `chmod 600 .env.production`.

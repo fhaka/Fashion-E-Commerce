@@ -20,6 +20,8 @@ const EXT: Record<string, string> = {
   'image/png': 'png',
   'image/webp': 'webp',
   'image/avif': 'avif',
+  'video/mp4': 'mp4',
+  'video/webm': 'webm',
 };
 
 /** Development storage: writes to apps/api/uploads and serves via /uploads. Use Cloudinary or S3 in production. */
@@ -57,10 +59,10 @@ class CloudinaryStorageProvider implements StorageProvider {
     });
   }
 
-  upload(file: { buffer: Buffer }, folder: string): Promise<StoredFile> {
+  upload(file: { buffer: Buffer; mimetype: string }, folder: string): Promise<StoredFile> {
     return new Promise((resolve, reject) => {
       const stream = cloudinary.uploader.upload_stream(
-        { folder: `${env.CLOUDINARY_FOLDER}/${folder}`, resource_type: 'image' },
+        { folder: `${env.CLOUDINARY_FOLDER}/${folder}`, resource_type: file.mimetype.startsWith('video/') ? 'video' : 'image' },
         (err, result) => {
           if (err || !result) return reject(err ?? new Error('Upload failed'));
           resolve({ url: result.secure_url, publicId: result.public_id });
@@ -71,7 +73,8 @@ class CloudinaryStorageProvider implements StorageProvider {
   }
 
   async remove(publicId: string): Promise<void> {
-    await cloudinary.uploader.destroy(publicId);
+    // Videos are uploaded to the "videos" folder and must be deleted as video resources.
+    await cloudinary.uploader.destroy(publicId, { resource_type: publicId.includes('/videos/') ? 'video' : 'image' });
   }
 }
 

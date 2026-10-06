@@ -13,6 +13,33 @@ export const imageUpload = multer({
   },
 });
 
+const VIDEO_TYPES = new Set(['video/mp4', 'video/webm']);
+export const MAX_VIDEO_BYTES = 50 * 1024 * 1024;
+
+/** Product videos (Premium): one MP4 or WebM file per request. */
+export const videoUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: MAX_VIDEO_BYTES, files: 1 },
+  fileFilter: (_req, file, cb) => {
+    if (!VIDEO_TYPES.has(file.mimetype)) return cb(ApiError.badRequest('Only MP4 or WebM videos are allowed'));
+    cb(null, true);
+  },
+});
+
+export function hasVideoSignature(buf: Buffer, mimetype: string): boolean {
+  if (buf.length < 12) return false;
+  switch (mimetype) {
+    case 'video/mp4':
+      // ISO base media file: "ftyp" box at offset 4.
+      return buf.toString('ascii', 4, 8) === 'ftyp';
+    case 'video/webm':
+      // EBML header.
+      return buf.subarray(0, 4).equals(Buffer.from([0x1a, 0x45, 0xdf, 0xa3]));
+    default:
+      return false;
+  }
+}
+
 /**
  * The declared MIME type comes from the client and can't be trusted, so check the
  * file signature ("magic bytes") as well before storing anything.

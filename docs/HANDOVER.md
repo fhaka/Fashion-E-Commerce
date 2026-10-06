@@ -46,7 +46,8 @@ see exactly what yours includes under **Settings → Your plan**.
 4. **Variants:** every size × colour combination, each with its own stock (and optionally its own price).
 5. **Visibility:** *Draft* hides it from the shop, *Active* publishes it, *Archived* retires it.
 6. **Labels:** *New*, *Best seller* and *Featured* control where it appears on the home page.
-7. **SEO (optional):** the title and description Google shows. A live preview shows how it will look.
+7. **Video (Premium, optional):** upload a short MP4 or WebM clip (up to 50 MB); it plays as the last item in the product gallery.
+8. **SEO (optional):** the title and description Google shows. A live preview shows how it will look.
 
 Other useful actions: **Duplicate** (copy a product to make a similar one) and bulk actions on the product list (publish, hide or label several at once).
 

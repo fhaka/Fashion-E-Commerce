@@ -5,6 +5,7 @@ import { ZodError } from 'zod';
 import { env } from '../config/env';
 import { logger } from '../config/logger';
 import { ApiError } from '../utils/ApiError';
+import { MAX_UPLOAD_BYTES, MAX_VIDEO_BYTES } from './upload';
 
 export function notFound(req: Request, _res: Response, next: NextFunction) {
   next(ApiError.notFound(`Route ${req.method} ${req.path} not found`));
@@ -31,7 +32,11 @@ export function errorHandler(err: unknown, req: Request, res: Response, _next: N
       error = new ApiError(500, 'DATABASE_ERROR', 'A database error occurred');
     }
   } else if (err instanceof MulterError) {
-    error = ApiError.badRequest(err.code === 'LIMIT_FILE_SIZE' ? 'File is too large' : err.message);
+    error = ApiError.badRequest(
+      err.code === 'LIMIT_FILE_SIZE'
+        ? `File is too large (maximum ${(req.path.endsWith('/video') ? MAX_VIDEO_BYTES : MAX_UPLOAD_BYTES) / 1024 / 1024} MB)`
+        : err.message,
+    );
   } else if (
     typeof err === 'object' &&
     err !== null &&

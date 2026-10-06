@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express';
-import { hasImageSignature } from '../middleware/upload';
+import { hasImageSignature, hasVideoSignature } from '../middleware/upload';
 import { getStorageProvider } from '../providers/storage';
 import * as merch from '../services/admin/merch.admin.service';
 import * as ops from '../services/admin/operations.admin.service';
@@ -63,6 +63,12 @@ export async function upload(req: Request, res: Response) {
   const stored = [];
   for (const f of files) stored.push(await storage.upload(f, folder));
   res.status(201).json({ data: stored });
+}
+export async function uploadVideo(req: Request, res: Response) {
+  const file = req.file;
+  if (!file) throw ApiError.badRequest('No file received');
+  if (!hasVideoSignature(file.buffer, file.mimetype)) throw ApiError.badRequest(`${file.originalname} is not a valid MP4 or WebM video`);
+  res.status(201).json({ data: await getStorageProvider().upload(file, 'videos') });
 }
 export async function deleteUpload(req: Request, res: Response) {
   await getStorageProvider().remove(req.valid.body.publicId);

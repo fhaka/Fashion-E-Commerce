@@ -23,6 +23,10 @@ const nextConfig: NextConfig = {
   output: 'standalone',
   outputFileTracingRoot: path.join(__dirname, '../..'),
   transpilePackages: ['@maison/shared'],
+  experimental: {
+    // Admin uploads go through the /api/v1 proxy: allow product videos (50 MB) plus multipart overhead.
+    proxyClientMaxBodySize: '60mb',
+  },
   images: {
     formats: ['image/avif', 'image/webp'],
     qualities: [60, 75, 85],

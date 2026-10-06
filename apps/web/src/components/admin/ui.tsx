@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowDownRight, ArrowUpRight, ChevronLeft, ChevronRight, ImagePlus, Search } from 'lucide-react';
+import { ArrowDownRight, ArrowUpRight, ChevronLeft, ChevronRight, Film, ImagePlus, Search } from 'lucide-react';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { api, ApiRequestError } from '@/lib/api';
 import { cn } from '@/lib/utils';
@@ -354,37 +354,52 @@ export function TextArea({
   );
 }
 
-/** Single image picker: upload a file (button or drag and drop) or paste a URL. */
-export function ImageField({
-  label,
-  value,
-  onChange,
-  folder,
-  hint,
-  error,
-  optional,
-  previewClassName = 'h-24 w-24',
-}: {
+type MediaKind = 'image' | 'video';
+
+const MEDIA: Record<MediaKind, { accept: string; maxMb: number; noun: string; drop: string }> = {
+  image: { accept: 'image/jpeg,image/png,image/webp,image/avif', maxMb: 8, noun: 'image', drop: 'Drop image' },
+  video: { accept: 'video/mp4,video/webm', maxMb: 50, noun: 'video', drop: 'Drop video' },
+};
+
+interface MediaFieldProps {
   label: string;
   value: string;
   onChange: (url: string) => void;
-  folder: string;
   hint?: string;
   error?: string;
   optional?: boolean;
   previewClassName?: string;
-}) {
+}
+
+/** Single file picker: upload (button or drag and drop) or paste a link, with a live preview. */
+function MediaField({ kind, folder, label, value, onChange, hint, error, optional, previewClassName = 'h-24 w-24' }: MediaFieldProps & { kind: MediaKind; folder?: string }) {
+  const media = MEDIA[kind];
   const fileRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [dragging, setDragging] = useState(false);
+
   const upload = async (file: File | undefined) => {
     if (!file) return;
+    if (!media.accept.split(',').includes(file.type)) {
+      toast.error(kind === 'video' ? 'Choose an MP4 or WebM video' : 'Choose a JPEG, PNG, WebP or AVIF image');
+      return;
+    }
+    if (file.size > media.maxMb * 1024 * 1024) {
+      toast.error(`That ${media.noun} is ${(file.size / 1024 / 1024).toFixed(0)} MB; the limit is ${media.maxMb} MB`);
+      return;
+    }
     const body = new FormData();
-    body.append('files', file);
     setUploading(true);
     try {
-      const [stored] = await api<{ url: string }[]>('/admin/uploads', { method: 'POST', body, query: { folder } });
-      onChange(stored.url);
+      let url: string;
+      if (kind === 'video') {
+        body.append('file', file);
+        url = (await api<{ url: string }>('/admin/uploads/video', { method: 'POST', body })).url;
+      } else {
+        body.append('files', file);
+        url = (await api<{ url: string }[]>('/admin/uploads', { method: 'POST', body, query: { folder } }))[0].url;
+      }
+      onChange(url);
     } catch (err) {
       toast.error(err instanceof ApiRequestError ? err.message : 'Upload failed');
     } finally {
@@ -392,6 +407,7 @@ export function ImageField({
       if (fileRef.current) fileRef.current.value = '';
     }
   };
+
   return (
     <div>
       <span className="mb-2 flex items-baseline justify-between gap-3 text-[0.68rem] tracking-[0.14em] uppercase">
@@ -416,22 +432,28 @@ export function ImageField({
             void upload(e.dataTransfer.files?.[0]);
           }}
         >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          {value ? <img src={value} alt="" className="max-h-full max-w-full object-contain" /> : <span className="px-1 text-center text-[0.62rem] tracking-[0.14em] text-stone-500 uppercase">Drop image</span>}
+          {!value ? (
+            <span className="px-1 text-center text-[0.62rem] tracking-[0.14em] text-stone-500 uppercase">{uploading ? 'Uploading…' : media.drop}</span>
+          ) : kind === 'video' ? (
+            <video src={value} className="max-h-full max-w-full" muted playsInline controls preload="metadata" aria-label={`${label} preview`} />
+          ) : (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={value} alt="" className="max-h-full max-w-full object-contain" />
+          )}
         </span>
         <div className="min-w-0 flex-1 space-y-2">
           <input
             type="url"
             value={value}
             onChange={(e) => onChange(e.target.value)}
-            placeholder="Paste an image link (https://…), or upload below"
+            placeholder={`Paste a${kind === 'image' ? 'n image' : ' video'} link (https://…), or upload below`}
             aria-label={`${label} link`}
             className="h-10 w-full border border-stone-300 bg-transparent px-3 text-sm outline-none focus:border-ink"
           />
           <div className="flex gap-2">
-            <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp,image/avif" className="sr-only" tabIndex={-1} aria-label={`Upload ${label}`} onChange={(e) => upload(e.target.files?.[0])} />
+            <input ref={fileRef} type="file" accept={media.accept} className="sr-only" tabIndex={-1} aria-label={`Upload ${label}`} onChange={(e) => upload(e.target.files?.[0])} />
             <Button type="button" size="sm" variant="outline" loading={uploading} onClick={() => fileRef.current?.click()}>
-              <ImagePlus className="h-3.5 w-3.5" /> Upload image
+              {kind === 'video' ? <Film className="h-3.5 w-3.5" /> : <ImagePlus className="h-3.5 w-3.5" />} Upload {media.noun}
             </Button>
             {value && (
               <Button type="button" size="sm" variant="ghost" onClick={() => onChange('')}>
@@ -444,4 +466,14 @@ export function ImageField({
       </div>
     </div>
   );
+}
+
+/** Image picker (stored in `folder`, like product images). */
+export function ImageField(props: MediaFieldProps & { folder: string }) {
+  return <MediaField kind="image" {...props} />;
+}
+
+/** Video picker: MP4 or WebM up to 50 MB (product videos are a Premium feature). */
+export function VideoField(props: MediaFieldProps) {
+  return <MediaField kind="video" {...props} />;
 }
