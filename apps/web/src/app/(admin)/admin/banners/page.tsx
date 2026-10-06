@@ -3,7 +3,7 @@
 import { ArrowDown, ArrowUp, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { adminBannerSchema } from '@maison/shared';
-import { ConfirmDialog, PageHeader, Pill, Tabs, TextArea, Toggle } from '@/components/admin/ui';
+import { ConfirmDialog, ImageField, PageHeader, Pill, Tabs, TextArea, Toggle } from '@/components/admin/ui';
 import { useSite } from '@/components/layout/SiteProvider';
 import { Button } from '@/components/ui/Button';
 import { FormError, Input, Select, zodFieldErrors } from '@/components/ui/Field';
@@ -171,9 +171,9 @@ export default function BannersPage() {
               <Input label="Title" value={draft.title} onChange={(e) => setDraft({ ...draft, title: e.target.value })} error={errors.title} />
             </div>
             <TextArea label="Subtitle" value={draft.subtitle} onChange={(v) => setDraft({ ...draft, subtitle: v })} rows={2} />
+            <ImageField label="Image (desktop)" value={draft.image} onChange={(v) => setDraft({ ...draft, image: v })} folder="banners" error={errors.image} previewClassName="h-24 w-40" hint="Landscape photo, at least 2400 px wide." />
+            <ImageField label="Image (mobile)" value={draft.mobileImage} onChange={(v) => setDraft({ ...draft, mobileImage: v })} folder="banners" optional error={errors.mobileImage} previewClassName="h-28 w-20" hint="Portrait version for phones. Without it, the desktop image is cropped." />
             <div className="grid gap-5 sm:grid-cols-2">
-              <Input label="Image URL (desktop)" value={draft.image} onChange={(e) => setDraft({ ...draft, image: e.target.value })} error={errors.image} />
-              <Input label="Image URL (mobile)" value={draft.mobileImage} onChange={(e) => setDraft({ ...draft, mobileImage: e.target.value })} optional error={errors.mobileImage} />
               <Input label="Button label" value={draft.ctaLabel} onChange={(e) => setDraft({ ...draft, ctaLabel: e.target.value })} optional />
               <Input label="Button link" value={draft.ctaHref} onChange={(e) => setDraft({ ...draft, ctaHref: e.target.value })} optional placeholder="/collections/…" />
               <Select label="Text colour" value={draft.theme} onChange={(e) => setDraft({ ...draft, theme: e.target.value as 'DARK' | 'LIGHT' })}>

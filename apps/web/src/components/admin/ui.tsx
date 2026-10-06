@@ -354,10 +354,29 @@ export function TextArea({
   );
 }
 
-/** Single image picker: upload (stored like product images) or paste a URL. */
-export function ImageField({ label, value, onChange, folder, hint, previewClassName = 'h-24 w-24' }: { label: string; value: string; onChange: (url: string) => void; folder: string; hint?: string; previewClassName?: string }) {
+/** Single image picker: upload a file (button or drag and drop) or paste a URL. */
+export function ImageField({
+  label,
+  value,
+  onChange,
+  folder,
+  hint,
+  error,
+  optional,
+  previewClassName = 'h-24 w-24',
+}: {
+  label: string;
+  value: string;
+  onChange: (url: string) => void;
+  folder: string;
+  hint?: string;
+  error?: string;
+  optional?: boolean;
+  previewClassName?: string;
+}) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
+  const [dragging, setDragging] = useState(false);
   const upload = async (file: File | undefined) => {
     if (!file) return;
     const body = new FormData();
@@ -375,25 +394,44 @@ export function ImageField({ label, value, onChange, folder, hint, previewClassN
   };
   return (
     <div>
-      <span className="mb-2 block text-[0.68rem] tracking-[0.14em] uppercase">{label}</span>
+      <span className="mb-2 flex items-baseline justify-between gap-3 text-[0.68rem] tracking-[0.14em] uppercase">
+        {label}
+        {optional && <span className="text-[0.68rem] tracking-normal text-stone-500 normal-case">Optional</span>}
+      </span>
       <div className="flex items-start gap-4">
-        <span className={cn('flex shrink-0 items-center justify-center overflow-hidden border border-stone-200 bg-stone-100 p-2', previewClassName)}>
+        <span
+          className={cn(
+            'flex shrink-0 items-center justify-center overflow-hidden border bg-stone-100 p-2 transition-colors',
+            dragging ? 'border-ink bg-stone-200' : error ? 'border-sale' : 'border-stone-200',
+            previewClassName,
+          )}
+          onDragOver={(e) => {
+            e.preventDefault();
+            setDragging(true);
+          }}
+          onDragLeave={() => setDragging(false)}
+          onDrop={(e) => {
+            e.preventDefault();
+            setDragging(false);
+            void upload(e.dataTransfer.files?.[0]);
+          }}
+        >
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          {value ? <img src={value} alt="" className="max-h-full max-w-full object-contain" /> : <span className="text-[0.62rem] tracking-[0.14em] text-stone-500 uppercase">None</span>}
+          {value ? <img src={value} alt="" className="max-h-full max-w-full object-contain" /> : <span className="px-1 text-center text-[0.62rem] tracking-[0.14em] text-stone-500 uppercase">Drop image</span>}
         </span>
         <div className="min-w-0 flex-1 space-y-2">
           <input
             type="url"
             value={value}
             onChange={(e) => onChange(e.target.value)}
-            placeholder="https://…"
-            aria-label={`${label} URL`}
+            placeholder="Paste an image link (https://…), or upload below"
+            aria-label={`${label} link`}
             className="h-10 w-full border border-stone-300 bg-transparent px-3 text-sm outline-none focus:border-ink"
           />
           <div className="flex gap-2">
             <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp,image/avif" className="sr-only" tabIndex={-1} aria-label={`Upload ${label}`} onChange={(e) => upload(e.target.files?.[0])} />
             <Button type="button" size="sm" variant="outline" loading={uploading} onClick={() => fileRef.current?.click()}>
-              <ImagePlus className="h-3.5 w-3.5" /> Upload
+              <ImagePlus className="h-3.5 w-3.5" /> Upload image
             </Button>
             {value && (
               <Button type="button" size="sm" variant="ghost" onClick={() => onChange('')}>
@@ -401,7 +439,7 @@ export function ImageField({ label, value, onChange, folder, hint, previewClassN
               </Button>
             )}
           </div>
-          {hint && <p className="text-xs text-stone-500">{hint}</p>}
+          {error ? <p className="text-xs text-sale">{error}</p> : hint && <p className="text-xs text-stone-500">{hint}</p>}
         </div>
       </div>
     </div>

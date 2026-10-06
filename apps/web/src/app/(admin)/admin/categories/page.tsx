@@ -3,7 +3,7 @@
 import { Plus } from 'lucide-react';
 import { Fragment, useState } from 'react';
 import { adminCategorySchema } from '@maison/shared';
-import { ConfirmDialog, PageHeader, Pill, TextArea, Thumb, Toggle } from '@/components/admin/ui';
+import { ConfirmDialog, ImageField, PageHeader, Pill, TextArea, Thumb, Toggle } from '@/components/admin/ui';
 import { Button } from '@/components/ui/Button';
 import { FormError, Input, Select, zodFieldErrors } from '@/components/ui/Field';
 import { Modal } from '@/components/ui/Modal';
@@ -160,7 +160,7 @@ export default function CategoriesPage() {
               ))}
             </Select>
             <TextArea label="Description" value={draft.description} onChange={(v) => setDraft({ ...draft, description: v })} rows={3} />
-            <Input label="Image URL" value={draft.image} onChange={(e) => setDraft({ ...draft, image: e.target.value })} optional error={errors.image} />
+            <ImageField label="Image" value={draft.image} onChange={(v) => setDraft({ ...draft, image: v })} folder="categories" optional error={errors.image} previewClassName="h-28 w-24" hint="Portrait photo (3:4), at least 1200 px. Shown in the shop-by-category section and menu." />
             <div className="flex items-end gap-6">
               <Input label="Sort order" inputMode="numeric" value={draft.sortOrder} onChange={(e) => setDraft({ ...draft, sortOrder: e.target.value.replace(/\D/g, '') })} className="w-32" />
               <label className="flex h-12 items-center gap-3 text-sm">

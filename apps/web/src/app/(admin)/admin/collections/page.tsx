@@ -3,7 +3,7 @@
 import { ArrowDown, ArrowUp, Plus, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { adminCollectionSchema } from '@maison/shared';
-import { ConfirmDialog, PageHeader, Pill, SearchInput, TextArea, Thumb, Toggle } from '@/components/admin/ui';
+import { ConfirmDialog, ImageField, PageHeader, Pill, SearchInput, TextArea, Thumb, Toggle } from '@/components/admin/ui';
 import { Button } from '@/components/ui/Button';
 import { Drawer } from '@/components/ui/Drawer';
 import { FormError, Input, zodFieldErrors } from '@/components/ui/Field';
@@ -163,7 +163,7 @@ function CollectionEditor({ collection, onClose, onSaved }: { collection: Collec
         <Input label="Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} error={errors.name} />
         <Input label="URL handle" value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value.toLowerCase() })} optional error={errors.slug} />
         <TextArea label="Description" value={form.description} onChange={(v) => setForm({ ...form, description: v })} rows={3} />
-        <Input label="Hero image URL" value={form.heroImage} onChange={(e) => setForm({ ...form, heroImage: e.target.value })} optional error={errors.heroImage} />
+        <ImageField label="Hero image" value={form.heroImage} onChange={(v) => setForm({ ...form, heroImage: v })} folder="collections" optional error={errors.heroImage} previewClassName="h-28 w-24" hint="Wide or portrait photo, at least 1600 px. Used on the collection page and home page." />
         <div className="flex flex-wrap items-center gap-6 text-sm">
           <label className="flex items-center gap-3">
             <Toggle checked={form.isFeatured} onChange={(v) => setForm({ ...form, isFeatured: v })} label="Featured" /> Featured on home page
